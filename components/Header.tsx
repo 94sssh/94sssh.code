@@ -6,20 +6,18 @@ import ThemeSwitch from './ThemeSwitch'
 import SearchButton from './SearchButton'
 import dayjs from 'dayjs'
 
+const isNight = () => {
+  return dayjs().get('hour') > 18
+}
+
 const Header = () => {
-  const isNight = () => {
-    return dayjs().get('hour') > 18
-  }
-
-  console.log(isNight())
-
   return (
     <header className="flex items-center justify-between py-10">
       <div>
         <Link href="/" aria-label={siteMetadata.headerTitle}>
           <div className="flex items-center justify-between">
             {typeof siteMetadata.headerTitle === 'string' ? (
-              <div className="hidden h-6 text-2xl font-semibold sm:block">
+              <div className="block h-6 text-2xl font-semibold">
                 {isNight() ? '🌛' : '🌞'} {siteMetadata.headerTitle}
               </div>
             ) : (
