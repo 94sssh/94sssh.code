@@ -4,7 +4,7 @@ const siteMetadata = {
   author: '94sssh',
   headerTitle: '94sssh',
   description: '94sssh의 블로그입니다.',
-  language: 'en-us',
+  language: 'ko_KR',
   theme: 'system', // system, dark or light
   siteUrl: 'https://94sssh-code.vercel.app/',
   siteRepo: 'https://github.com/94sssh',
@@ -12,7 +12,7 @@ const siteMetadata = {
   socialBanner: '/static/images/twitter-card.png',
   email: '94ssabiz@gmail.com',
   github: 'https://github.com/94sssh',
-  locale: 'en-US',
+  locale: 'ko_KR',
   analytics: {
     // If you want to use an analytics provider you have to add it to the
     // content security policy in the `next.config.js` file.
