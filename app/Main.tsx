@@ -20,19 +20,19 @@ export default function Home({ posts }) {
           {posts.slice(0, MAX_DISPLAY).map((post) => {
             const { slug, date, title, summary, tags } = post
             return (
-              <li key={slug} className="py-12">
+              <li key={slug} className="py-8">
                 <article>
                   <div className="space-y-1 xl:grid xl:grid-cols-4 xl:items-baseline xl:space-y-0">
                     <dl>
                       <dt className="sr-only">Published on</dt>
-                      <dd className="text-base font-medium leading-6 text-gray-500 dark:text-gray-400">
+                      <dd className="text-sm font-medium leading-6 text-gray-500 dark:text-gray-400 sm:text-base">
                         <p>{dayjs(date).format('YYYY.MM.DD')}</p>
                       </dd>
                     </dl>
                     <div className="space-y-5 xl:col-span-3">
                       <div className="space-y-4">
-                        <div>
-                          <h2 className="text-2xl font-bold leading-8 tracking-tight">
+                        <div className="space-y-1">
+                          <h2 className="text-xl font-bold leading-8 tracking-tight sm:text-2xl">
                             <Link
                               href={`/blog/${slug}`}
                               className="text-gray-900 dark:text-gray-100"
