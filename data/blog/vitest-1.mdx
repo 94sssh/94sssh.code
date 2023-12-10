@@ -9,31 +9,59 @@ layout: PostSimple
 
 Vitest를 알아보겠습니다.
 
-## Inline Highlighting
+## 설치
 
-Sample of inline highlighting `sum = parseInt(num1) + parseInt(num2)`
-
-## Code Blocks
-
-Some Javascript code
-
-```javascript
-var num1, num2, sum
-num1 = prompt('Enter first number')
-num2 = prompt('Enter second number')
-sum = parseInt(num1) + parseInt(num2) // "+" means "add"
-alert('Sum = ' + sum) // "+" means combine into a string
+```
+npm install -D vitest
 ```
 
-Some Python code 🐍
+```
+yarn add -D vitest
+```
 
-```python
-def fib():
-    a, b = 0, 1
-    while True:            # First iteration:
-        yield a            # yield 0 to start with and then
-        a, b = b, a + b    # a will now be 1, and b will also be 1, (0 + 1)
+## 세팅
 
-for index, fibonacci_number in zip(range(10), fib()):
-     print('{i:3}: {f:3}'.format(i=index, f=fibonacci_number))
+vitest를 사용하기 위해서 몇가지 세팅이 필요하다.
+
+```json
+{
+  "scripts": {
+    "test": "vitest"
+  }
+}
+```
+
+## 테스트 코드
+
+```javascript
+// sum.js
+export function sum(a, b) {
+  return a + b
+}
+```
+
+```javascript
+// sum.test.js
+import { expect, test } from 'vitest'
+import { sum } from './sum'
+
+test('adds 1 + 2 to equal 3', () => {
+  expect(sum(1, 2)).toBe(3)
+})
+```
+
+```javascript
+
+```
+
+```javascript
+
+```
+
+```javascript
+
+```
+
+```javascript
+
 ```
