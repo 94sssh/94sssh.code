@@ -7,7 +7,7 @@ import SearchButton from './SearchButton'
 import dayjs from 'dayjs'
 
 const isNight = () => {
-  return dayjs().get('hour') > 18
+  return dayjs().get('hour') > 18 && dayjs().get('hour') < 7
 }
 
 const Header = () => {
@@ -18,7 +18,7 @@ const Header = () => {
           <div className="flex items-center justify-between">
             {typeof siteMetadata.headerTitle === 'string' ? (
               <div className="block h-6 text-2xl font-semibold">
-                {isNight() ? '🌛' : '🌞'} {siteMetadata.headerTitle}
+                {isNight() ? '🛸' : '🚀'} {siteMetadata.headerTitle}
               </div>
             ) : (
               siteMetadata.headerTitle
