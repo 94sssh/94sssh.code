@@ -8,9 +8,11 @@ layout: PostSimple
 images: ['/static/images/vitest/vitest.png']
 ---
 
+<TOCInline toc={props.toc} toHeading={2} />
+
 ## 테스팅 라이브러리
 
-Vitest는 테스팅 라이브러리입니다.  
+`Vitest`는 테스팅 라이브러리입니다.  
 테스트 코드 작성을 도와주는 도구로, 이를 통해 테스트 자동화를 구성할 수 있고 실행 결과가 기대와 일치하는지 확인할 수 있습니다.
 
 테스트 코드를 작성하면 다음과 같은 장점을 얻을 수 있습니다.
@@ -39,11 +41,15 @@ Jest 이전에는 Test Runner, Assertion Library, Test Mock 라이브러리 등�
 - Test Mock  
    테스트를 위한 모의 객체나 모듈을 생성하고, 특정 메서드가 호출되었는지, 얼마나 호출되었는지를 추적하거나 반환값을 설정하거나, 특정 조건이나 상황에서 어떻게 동작할지를 시뮬레이션하는 기능을 제공합니다.  
    대표적으로 [Sinon](https://sinonjs.org/)이 있습니다.  
-  ![Sinon](/static/images/vitest/sinon.png)
+   ![Sinon](/static/images/vitest/sinon.png)
 
-이후 Jest의 등장으로, 대부분의 기능을 담은 Jest가 대표적인 테스팅 라이브러리가 되었습니다.  
+<br />
+
+![Jest](/static/images/vitest/jest.png)
+이후 Jest의 등장으로, 대부분의 기능을 담은 Jest가 대표적인 테스팅 라이브러리가 되었습니다.
+
 ![JestNpmTrends](/static/images/vitest/jestnpmtrends.png)  
-_(적절한 비교가 아닐 수도 있지만...)_
+ _(적절한 비교가 아닐 수도 있지만...)_
 
 그렇지만 이번에 사용할 테스팅 라이브러리는 Jest가 아닌 Vitest입니다.  
 현재 프로젝트는 Vite를 사용 중인데 굉장히 만족스럽게 사용하고 있습니다.  
@@ -53,7 +59,11 @@ _(적절한 비교가 아닐 수도 있지만...)_
 테스트 주도 개발에 대해 '테스트를 위한 테스트가 되어간다.', '테스트 코드 작성에 시간이 많이 쓰인다.'는 말을 듣고 테스트가 필요하지 않겠다는 생각을 했었습니다.  
 지금은 생각을 바꿔 테스트의 필요성과 중요성을 느끼고 Vitest를 도입하고자 내용을 정리해 보려고 합니다.
 
+![Vitest](/static/images/vitest/vitest.png)
+
 ## 설치
+
+`npm` 혹은 `yarn` 등을 사용하여 설치합니다.
 
 ```
 npm install -D vitest
@@ -63,11 +73,14 @@ npm install -D vitest
 yarn add -D vitest
 ```
 
+> Vitest 1.0에는 Vite >=v5.0.0 및 Node >=v18.00이 필요합니다.
+
 ## 세팅
 
-vitest를 사용하기 위해서 몇가지 세팅이 필요하다.
+`Vitest`를 실행하기 위해 `package.json`에 scripts를 정의합니다.
+이때, vitest로 실행 모드에 진입하면 watch 모드로 실행되어 변경 사항이 생길때마다 테스트를 재실행하고 결과를 반환합니다.
 
-```json
+```json:package.json
 {
   "scripts": {
     "test": "vitest"
@@ -75,37 +88,123 @@ vitest를 사용하기 위해서 몇가지 세팅이 필요하다.
 }
 ```
 
-## 테스트 코드
+테스트를 한 번만 실행하도록 스크립트를 수정하려면 `vitest run`으로 정의합니다.
 
-```javascript
-// sum.js
-export function sum(a, b) {
-  return a + b
+```json:package.json
+{
+  "scripts": {
+    "test": "vitest run"
+  }
 }
 ```
 
-```javascript
-// sum.test.js
+`npm` 혹은 `yarn` 등을 사용하여 테스트를 실행할 수 있습니다.
+
+```
+npm run test
+```
+
+```
+yarn test
+```
+
+명령어를 통해서 실행할 수도 있습니다.  
+현재 경로를 기준으로 실행되며, `vitest`명령어의 인자로 경로를 전달할 수 있습니다. 전달된 경로에 포함된 테스트 파일만 실행됩니다.  
+마찬가지로 `vitest run`을 통해 한 번만 실행할 수 있습니다.
+
+```
+vitest foobar
+```
+
+## 테스트 코드 작성
+
+아래와 같이 테스트 코드를 작성하고 실행해 볼 수 있습니다.  
+`sum.test.js`의 코드를 간략하게 살펴보겠습니다.  
+`test`는 테스트 함수로, 하나의 테스트 케이스를 정의합니다. 테스트 케이스의 이름과 로직을 포함합니다.  
+`test`함수의 내부 첫 번째 문자열 매개변수는 해당 테스트 케이스의 이름을 정의합니다.  
+`test`함수의 두 번째 매개변수로 전달된 함수는 실제 테스트 로직을 포함하고 있습니다. 테스트 코드가 어떻게 동작할지를 정의합니다.  
+`expect`함수는 어설션을 만드는데 사용됩니다. 여기서는 어설션 메서드 중 하나인 `toBe`와 함께 사용되었는데, `toBe`는 실행한 결과를 기댓값과 비교하여 동일한지 확인합니다.
+
+```javascript:sum.js
+export function sum(a, b) {
+  return a + b;
+}
+```
+
+```javascript:sum.test.js
 import { expect, test } from 'vitest'
 import { sum } from './sum'
 
 test('adds 1 + 2 to equal 3', () => {
-  expect(sum(1, 2)).toBe(3)
+  expect(sum(1, 2)).toBe(3);
 })
 ```
 
-```javascript
+![testresult](/static/images/vitest/testresult.png)
 
+## Vitest 구성
+
+Vitest는 기본적으로 Vite와 통합된 구성을 사용해 `vite.config.ts`파일을 읽어 플러그인 등 설정을 Vite와 일치시킵니다.  
+Vitest를 위한 다른 구성을 원한다면 아래와 같이 구성할 수 있습니다.
+
+1. `vitest.config.ts`파일을 생성해 더 높은 우선순위를 갖도록 합니다.
+2. CLI를 통해 `--config`옵션을 전달하여 특정 구성 파일을 지정합니다.  
+   `vitest --config ./path/to/vitest.config.ts`
+3. `vite.config.ts`파일에서 `process.env.VITEST` 또는 `defineConfig`의 `mode` 속성을 사용해 테스트 중에만 다른 구성이 적용되도록 조건부로 구성을 적용할 수 있습니다.
+
+Vitest은 Vite와 동일한 확장자를 지원하며, 구성 파일로 `.js`, `.mjs`, `.cjs`, `.ts`, `.cts`, `.mts`를 사용할 수 있습니다. `.json`은 지원하지 않습니다.
+
+만약 Vite를 빌드툴로 사용하지 않는다면, `vitest.config.ts`파일에 `test`속성을 사용해 Vitest를 구성할 수 있습니다.
+
+```ts:vitest.config.ts
+import { defineConfig } from 'vitest/config';
+
+export default defineConfig({
+  test: {
+    // ...
+  },
+});
 ```
 
-```javascript
+이미 Vite를 사용하고 있다면, `vite.config.ts`파일에 test 속성을 추가할 수 있습니다. 이때, 파일 상단에 트리플 슬래시 지시어를 사용하여 Vitest 타입 참조를 추가해야 합니다.
 
+```ts:vite.config.ts
+/// <reference types="vitest" />
+import { defineConfig } from 'vite';
+
+export default defineConfig({
+  test: {
+    // ...
+  },
+});
 ```
 
-```javascript
+Vitest에서는 Vite와 Vitest 각각의 `.config.ts`파일을 만드는 것을 추천하지 않습니다. `vitest.config.ts`파일을 만들게 되면 `vite.config.ts`파일의 설정이 확장되는 것이 아니라 재정의를 하기 때문에 `vitest.config.ts`에서 동일한 옵션을 정의해 주어야 합니다. 그렇기에 `mergeConfig`메서드를 제공하여 두 구성을 병합할 수 있도록 하고 있습니다.
 
+```ts
+import { defineConfig, mergeConfig } from 'vitest/config'
+import viteConfig from './vite.config.mjs'
+
+export default mergeConfig(
+  viteConfig,
+  defineConfig({
+    test: {
+      // ...
+    },
+  })
+)
 ```
 
-```javascript
+## 자주 쓰이는 Api
 
-```
+이제 자주 쓰이는 Api를 알아보겠습니다.
+
+### test
+
+https://vitest.dev/api/#test
+
+### expect
+
+https://vitest.dev/api/expect.html#expect
+
+## Mock Functions
