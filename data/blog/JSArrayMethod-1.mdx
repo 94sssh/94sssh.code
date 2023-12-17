@@ -1,0 +1,123 @@
+---
+title: JavaScript 배열 메서드인데요
+date: '2023-12-16'
+tags: ['javascript']
+draft: false
+summary: 기본기 상승을 위한 JavaScript 배열 메서드 알아보기 (1)
+layout: PostSimple
+images: ['']
+---
+
+<TOCInline toc={props.toc} toHeading={2} />
+
+## 기본기 훈련
+
+MDN에서 자바스크립트 배열 항목을 보면, 현재 날짜 기준으로 43개의 메서드가 소개되어 있다. 아무래도 자주 쓰여 익숙한 메서드부터, 처음 공부할 때는 배웠지만 이후에 잘 쓰지 않는 메서드, 새롭게 나와 아직 잘 모르는 메서드 등, 내 생각보다 많은 메서드가 있고 자주 쓰지 않더라도 그러한 기능이 있는 줄 모르는 것과 아는 것은 차이가 있다고 생각해 기본기를 다듬을 겸, 이번에는 배열 메서드를 정리해 봤다. 순서는 MDN의 소개 순서와 마찬가지로 알파벳 순으로 정렬했다.
+
+## .at()
+
+`at()`메서드는 정수를 받아 배열의 해당 인덱스에 접근하는 메서드다. 비교적 최근에 나온 메서드로, 직관적이라 바로 이해하고 사용할 수 있다. `at()`메서드를 쓰면서 좋았던 점은 배열의 마지막 인덱스에 접근할 때, 기존에는
+
+```js
+const arr = ['blue', 'green', 'yellow', 'orange', 'purple']
+
+console.log(arr[arr.length - 1]) // 'purple'
+```
+
+이렇게 처리했던 것을,
+
+```js
+const arr = ['blue', 'green', 'yellow', 'orange', 'purple']
+
+console.log(arr.at(-1)) // 'purple'
+```
+
+이렇게 처리할 수 있다. 음수를 전달하면 뒤에서부터 인덱스를 거슬러 접근하므로, 상당히 편하게 사용할 수 있다.
+
+## .concat()
+
+`concat()`메서드는 배열을 합치는 메서드이다. 기존 배열에 `concat()`메서드를 통해 배열을 전달하면, 두 배열이 병합된 새 배열을 리턴한다. `concat()`메서드를 사용하면 배열을 쉽게 합칠 수 있고, 기존 배열을 수정하지 않고 새로운 배열을 변수에 할당해 사용할 수 있다. 한 번에 두 개 이상의 배열을 전달할 수도 있는데, 이렇게 되면 전달한 배열들이 순차적으로 기존 배열의 다음 순서로 병합된 새 배열을 리턴한다.
+
+```js
+const arr1 = ['MON', 'TUE', 'WED']
+const arr2 = ['THU', 'FRI', 'SAT']
+const arr3 = arr1.concat(arr2)
+
+console.log(arr3) // ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT']
+```
+
+## .copyWithin()
+
+이번에 정리하면서 처음 알게된 메서드이다.
+
+```js
+const arr = ['A', 'AA', 'AAA', 'AAAA', 'AAAAA']
+```
+
+## .entries()
+
+```js
+
+```
+
+## .every()
+
+```js
+
+```
+
+## .fill()
+
+```js
+
+```
+
+## .filter()
+
+```js
+
+```
+
+## .find()
+
+```js
+
+```
+
+## .findIndex()
+
+```js
+
+```
+
+## .findLast()
+
+```js
+
+```
+
+## .findLastIndex()
+
+```js
+
+```
+
+## .flat()
+
+```js
+
+```
+
+## .flatMap()
+
+```js
+
+```
+
+## .forEach()
+
+```js
+
+```
+
+> 참고 문서 : https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array
