@@ -17,7 +17,7 @@ interface LayoutProps {
 }
 
 export default function PostLayout({ content, next, prev, children }: LayoutProps) {
-  const { path, slug, date, title } = content
+  const { path, slug, date, title, lastmod } = content
 
   return (
     <SectionContainer>
@@ -32,6 +32,11 @@ export default function PostLayout({ content, next, prev, children }: LayoutProp
                   <dd className="text-base font-medium leading-6 text-gray-500 dark:text-gray-400">
                     <p>{dayjs(date).format('YYYY.MM.DD')}</p>
                   </dd>
+                  {lastmod && (
+                    <dd className="text-xs leading-6 text-gray-400 dark:text-gray-300">
+                      <p>Edited {dayjs(lastmod).format('YYYY.MM.DD')}</p>
+                    </dd>
+                  )}
                 </div>
               </dl>
               <div>
