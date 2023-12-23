@@ -1,6 +1,6 @@
 const TableWrapper = ({ children }) => {
   return (
-    <div className="w-full overflow-x-auto">
+    <div className="mx-auto w-full max-w-2xl overflow-x-auto">
       <table>{children}</table>
     </div>
   )
