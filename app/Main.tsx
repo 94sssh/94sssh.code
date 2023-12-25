@@ -11,7 +11,7 @@ export default function Home({ posts }) {
       <div className="divide-y divide-gray-200 dark:divide-gray-700">
         <div className="space-y-1 pb-8 pt-6">
           <h1 className="text-2xl font-extrabold leading-9 tracking-tight text-gray-900 dark:text-gray-100 sm:text-3xl sm:leading-10 md:text-4xl md:leading-14">
-            Latest
+            전체 글 ({posts.length})
           </h1>
           <p className="text-base text-gray-500 dark:text-gray-400">{siteMetadata.description}</p>
         </div>
