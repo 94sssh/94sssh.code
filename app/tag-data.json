@@ -2,10 +2,10 @@
   "vitest": 1,
   "vite": 1,
   "test": 1,
-  "javascript": 1,
-  "book": 1,
-  "deepdive": 1,
-  "document": 1,
+  "javascript": 7,
+  "book": 7,
+  "deepdive": 5,
+  "document": 2,
   "type": 1,
   "polymorphism": 1
 }
