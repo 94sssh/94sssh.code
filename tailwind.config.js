@@ -22,7 +22,7 @@ module.exports = {
         14: '3.5rem',
       },
       fontFamily: {
-        sans: ['pretendard', ...fontFamily.sans],
+        sans: ['SUIT', 'pretendard', ...fontFamily.sans],
       },
       colors: {
         primary: colors.blue,
