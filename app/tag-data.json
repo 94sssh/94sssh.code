@@ -3,9 +3,10 @@
   "vite": 1,
   "test": 1,
   "javascript": 10,
-  "book": 8,
+  "book": 9,
   "deepdive": 6,
   "document": 4,
   "type": 1,
-  "polymorphism": 1
+  "polymorphism": 1,
+  "OOP": 1
 }
