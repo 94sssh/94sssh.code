@@ -1,7 +1,7 @@
 ---
 title: JavaScript 배열 메서드인데요
 date: '2023-12-16'
-lastmod: '2023-12-21'
+lastmod: '2024-03-09'
 tags: ['javascript', 'document']
 draft: false
 summary: 기본기 상승을 위한 JavaScript 배열 메서드 알아보기 (1)
@@ -103,6 +103,15 @@ const numbers = [1, 5, 8, 10, 15]
 const filteredNumbers = numbers.filter((number) => number > 5)
 
 console.log(filteredNumbers) // [8, 10, 15]
+```
+
+`filter()`메서드에 인자로 `Boolean`을 넘기면 조건식의 평가 결과가 Falsy한 값들을 제외한 값들을 리턴한다. 알고리즘을 풀 때 매우 유용하다.
+
+```js
+const array = [0, 1, false, true, '', 'el', null, undefined, NaN]
+const filteredArray = array.filter(Boolean)
+
+console.log(filteredArray) // [1, true, 'el']
 ```
 
 > 참고 문서 : https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array
