@@ -1,0 +1,168 @@
+---
+title: JavaScript 객체 메서드인데요
+date: '2024-04-13'
+tags: ['javascript', 'document']
+draft: false
+summary: 기본기 상승을 위한 JavaScript 객체 메서드 알아보기 (1)
+layout: PostSimple
+images: ['']
+---
+
+<TOCInline toc={props.toc} toHeading={2} exclude="기본기 훈련" />
+
+## 기본기 훈련
+
+MDN에서 자바스크립트 객체 항목을 보면, 현재 날짜 기준으로 비표준화된 메서드를 제외하고 29개의 메서드가 소개되어 있다. 배열 메서드보다는 아무래도 덜 쓰는 편이라 더 모르는 메서드가 많았다. 그래서 배열 메서드와 마찬가지로 이번에는 객체 메서드를 정리해봤다. 순서는 MDN의 소개 순서와 마찬가지로 알파벳 순으로 정렬했다.
+
+## .assign()
+
+`assign()`메서드는 한 개 이상의 소스 객체에서 속성을 복사해 대상 객체에 붙여넣을 때 사용하는 메서드이다. 소스 객체의 모든 속성이 복사되며, 같은 키를 가진 경우, 해당 키의 값을 덮어쓴다. 해당 메서드에 사용된 대상 객체는 원본 객체가 변화된다. 주의할 점은, 깊은 복사가 아니라 얕은 복사이므로 중첩된 객체 등 참조를 유지하는 경우가 있어 깊은 복사가 필요하다면 다른 방법을 사용해야 한다.
+
+```js
+// 두 개의 객체를 병합
+const target = { a: 1, b: 2 }
+const source = { b: 3, c: 4 }
+
+const result = Object.assign(target, source)
+console.log(result) // { a: 1, b: 3, c: 4 }
+
+// 세 개 이상의 객체를 병합
+const target = { a: 1, b: 2 }
+const source1 = { b: 3, c: 4 }
+const source2 = { d: 5 }
+
+const result = Object.assign(target, source1, source2)
+console.log(result) // { a: 1, b: 3, c: 4, d: 5 }
+
+// 새로운 객체에 병합
+const source1 = { a: 1, b: 2 }
+const source2 = { b: 3, c: 4 }
+
+const result = Object.assign({}, source1, source2)
+console.log(result) // { a: 1, b: 3, c: 4 }
+```
+
+## .create()
+
+`create()`메서드는 지정된 프로토타입 객체를 사용해 새 객체를 생성한다. `create()`를 통해 새 객체에 프로토타입을 지정해주어 객체 간의 상속 관계를 설정할 수 있다.
+
+```js
+// 프로토타입 객체
+const animal = {
+  speak: function () {
+    console.log(this.sound)
+  },
+}
+
+// create()로 새로운 객체 생성
+const cat = Object.create(animal) // 새로 만든 cat의 프로토타입으로 animal 전달
+cat.sound = '야옹'
+
+const dog = Object.create(animal)
+dog.sound = '멍'
+
+cat.speak() // 야옹
+dog.speak() // 멍
+```
+
+`create()`메서드를 사용해 `cat`과 `dog`객체를 생성하는데 두 객체는 `animal`객체를 프로토타입으로 가지고 있다. 그래서 두 객체 모두 `animal`객체의 프로퍼티와 메서드를 상속 받아 `speak()`메서드를 호출할 수 있다. `create()` 메서드는 두 개의 매개변수를 받으며, 첫 번째 매개변수는 새로 만든 객체의 프로토타입이 되는 객체를 받는다. 두 번째 매개변수는 선택사항으로, 새로운 객체에 추가될 프로퍼티와 메서드를 정의한다.
+
+## .defineProperties()
+
+`defineProperties()`메서드는 `defineProperty()`메서드와 유사하지만 여러 개의 속성을 한 번에 정의할 수 있는 점이 다르다. 속성을 따로 지정하지 않았을 경우, 기본값은 `undefined`이다. `defineProperty()`메서드에 대한 설명은 아래 참조.
+
+```js
+const obj = {}
+
+Object.defineProperties(obj, {
+  'color', {
+    value: 'green',
+    writable: true,
+  },
+  'size': {}
+})
+
+console.log(obj.color) // green
+console.log(obj.size) // undefined
+```
+
+## .defineProperty()
+
+`defineProperty()`메서드는 객체에 새로운 속성을 정의하거나 이미 존재하는 속성의 속성을 수정할 때 사용한다. `defineProperty()`를 사용하면 객체의 속성을 세밀하게 제어할 수 있다. 일반적인 할당을 통해 추가한 속성은 열거(`for ... in` 또는 `Object.Keys`)할 때 노출되며, 값을 변경하거나 삭제할 수 있지만 `defineProperty()`로 추가한 속성은 기본적으로 불변하며 열거 불가능하다.
+
+```js
+const obj = {}
+
+Object.defineProperty(obj, 'color', {
+  value: 'green',
+  writable: true,
+})
+
+console.log(obj.color) // green
+```
+
+`defineProperty()`은 대상 객체와 속성의 이름, `속성 서술자`를 매개 변수로 받는다. `속성 서술자`는 데이터 서술자와 접근자 서술자 두 가지 형식을 취하는데, 둘 모두 객체 형태이며 두 유형을 동시에 나타낼 수는 없다. 두 서술자 모두 공통으로 가지는 속성은 `configurable`, `enumerable`이며, 데이터 서술자는 `value`, `writable`를, 접근자 서술자는 `get`, `set`을 추가적으로 가질 수 있다. 데이터 서술자는 객체의 속성에 대한 일반적인 값 등을 구성하고, 접근자 속성은 값을 가지지 않고 `get`과 `set`을 통해 속성에 대한 값을 읽고 쓰는 동작을 수행할 수 있게 한다.
+
+- value: 속성의 초기값을 지정한다. 기본값은 `undefined`이다.
+- writable: 속성의 값을 변경할 수 있는지 지정한다. 기본값은 `false`이다.
+- enumerable: 속성이 열거 가능한지 지정한다. 기본값은 `false`이다.
+- configurable: 속성을 변경하거나 삭제할 수 있는지 지정한다. 기본값은 `false`이다.
+- get: 속성의 현재 값을 리턴한다. 기본값은 `undefined`이다.
+- set: 속성에 값을 할당한다. 기본값은 `undefined`이다.
+
+## .entries()
+
+`entries()`메서드는 객체의 속성들을 `[key, value]`형태의 배열로 변환하여 리턴한다. 단 열거 가능한 속성들에 대해서만 동작한다. 객체의 속성의 키만 필요한 경우에는 `keys()`를, 속성의 값만 필요한 경우에는 `values()`를 사용할 수 있다.
+
+```js
+const obj = { a: 1, b: 2, c: 3 }
+
+console.log(Object.entries(obj)) // [['a', 1], ['b', 2], ['c', 3]]
+
+const obj2 = { a: 5, b: 7, c: 9 }
+for (const [key, value] of Object.entries(obj2)) {
+  console.log(`${key} ${value}`) // "a 5", "b 7", "c 9"
+}
+```
+
+## .freeze()
+
+`freeze()`메서드는 객체를 동결시킨다. 동결된 객체는 불변성을 가져 객체의 속성들이 추가, 삭제, 수정되지 않도록 만든다. 그러나 객체의 내부 속성까지 모두 동결되는 것은 아니므로, 속성 값이 객체나 배열인 경우 속성을 변경할 수 있다.
+
+```js
+const obj = { a: 1, b: 2 }
+
+Object.freeze(obj)
+
+obj.a = 3
+obj.c = 3
+delete obj.b
+
+console.log(obj) // { a: 1, b: 2 }
+```
+
+## .fromEntries()
+
+`fromEntries()`메서드는 `이터러블 객체`를 받아 `[key, value]`형태로 속성을 가진 객체를 생성한다. `entries()`와 반대로 동작한다.
+
+```js
+const entries = [
+  ['a', 1],
+  ['b', 2],
+  ['c', 3],
+]
+
+console.log(Object.fromEntries(entries)) // { a: 1, b: 2, c: 3 }
+```
+
+다음과 같이 응용하여 객체를 변환할 수 있다.
+
+```js
+const before = { a: 1, b: 2, c: 3 }
+
+const after = Object.fromEntries(Object.entries(before).map(([key, val]) => [key, val * 2]))
+
+console.log(after) // { a: 2, b: 4, c: 6 }
+```
+
+> 참고 문서 : https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/object
