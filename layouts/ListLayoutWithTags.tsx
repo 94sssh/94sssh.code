@@ -28,12 +28,18 @@ function Pagination({ totalPages, currentPage }: PaginationProps) {
   const prevPage = currentPage - 1 > 0
   const nextPage = currentPage + 1 <= totalPages
 
+  const startPageNum = currentPage > 5 ? Math.floor((currentPage - 1) / 5) * 5 + 1 : 1
+  const shownPagesNum = Math.min(totalPages, 5)
+  const pageNums = new Array(Math.min(shownPagesNum, totalPages - startPageNum + 1) || 0)
+    .fill(0)
+    .map((_, i) => startPageNum + i)
+
   return (
     <div className="space-y-2 pb-8 pt-6 md:space-y-5">
       <nav className="flex justify-between">
         {!prevPage && (
           <button className="cursor-auto disabled:opacity-50" disabled={!prevPage}>
-            Previous
+            &lt;
           </button>
         )}
         {prevPage && (
@@ -41,20 +47,32 @@ function Pagination({ totalPages, currentPage }: PaginationProps) {
             href={currentPage - 1 === 1 ? `/${basePath}/` : `/${basePath}/page/${currentPage - 1}`}
             rel="prev"
           >
-            Previous
+            &lt;
           </Link>
         )}
-        <span>
-          {currentPage} of {totalPages}
-        </span>
+        <div className="flex gap-4">
+          <Link href={`/${basePath}/page/1`}>1</Link>
+          <span>...</span>
+          {pageNums.map((num) => (
+            <Link
+              key={num}
+              href={`/${basePath}/page/${num}`}
+              className={`${num === currentPage && 'font-bold text-primary-500'}`}
+            >
+              {num}
+            </Link>
+          ))}
+          <span>...</span>
+          <Link href={`/${basePath}/page/${totalPages}`}>{totalPages}</Link>
+        </div>
         {!nextPage && (
           <button className="cursor-auto disabled:opacity-50" disabled={!nextPage}>
-            Next
+            &gt;
           </button>
         )}
         {nextPage && (
           <Link href={`/${basePath}/page/${currentPage + 1}`} rel="next">
-            Next
+            &gt;
           </Link>
         )}
       </nav>
@@ -119,7 +137,7 @@ export default function ListLayoutWithTags({
               </ul>
             </div>
           </div>
-          <div>
+          <div className="flex-1">
             <ul>
               {displayPosts.map((post) => {
                 const { path, date, title, summary, tags } = post
