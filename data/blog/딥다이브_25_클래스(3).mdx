@@ -1,0 +1,152 @@
+---
+title: 모던 자바스크립트 Deep Dive - 25. 클래스(3)
+date: '2024-07-23T00:00:00'
+tags: ['javascript', 'book', 'deepdive']
+draft: false
+summary: 모던 자바스크립트 Deep Dive - 25. 클래스(3)
+layout: PostSimple
+---
+
+## 25.8. 상속에 의한 클래스 확장
+
+### 25.8.1. 클래스 상속과 생성자 함수 상속
+
+상속에 의한 클래스 확장은 프로토타입 기반 상속과는 다른데, **상속에 의한 클래스 확장은 기존 클래스를 상속받아 새로운 클래스를 확장하여 정의하는 것**이다. 클래스는 `extends` 키워드를 통해 편하고 직관적으로 상속 받아 다른 클래스를 확장할 수 있다. 반면, 생성자 함수는 클래스와 같이 상속을 통해 확장할 수 있는 문법이 없다.
+
+### 25.8.2. extends 키워드
+
+`extends` 키워드를 사용해 상속받을 클래스를 정의한다.
+
+```js
+// 수퍼(베이스/부모)클래스
+class Base {}
+
+// 서브(파생/자식)클래스
+class Derived extends Base {}
+```
+
+- **서브클래스(파생/자식 클래스)**: 상속을 통해 확장된 클래스
+- **수퍼클래스(베이스/부모 클래스)**: 서브클래스에게 상속된 클래스
+
+`extends`키워드는 수퍼클래스와 서브클래스 간의 상속 관계를 설정한다. 수퍼클래스와 서브클래스는 인스턴스의 프로토타입 체인뿐 아니라 클래스 간의 프로토타입 체인도 생성해 프로토타입 메서드, 정적 메서드 모두 상속이 가능하다.
+
+### 25.8.3. 동적 상속
+
+`extends`는 생성자 함수를 비롯해 [[Construct]] 내부 메서드를 갖는 함수 객체로 평가될 수 있는 모든 표현식을 상속받아 클래스를 확장할 수도 있으며, 반드시 키워드 앞에 클래스가 와야 한다. 이를 통해 동적으로 상속받을 대상을 결정할 수 있다.
+
+```js
+// 생성자 함수
+function Base(a) {
+  this.a = a
+}
+
+// 생성자 함수를 상속받는 서브클래스
+class Derived extends Base {}
+
+const derived = new Derived(1)
+```
+
+```js
+function Base1() {}
+
+class Base2 {}
+
+let condition = true
+
+// 동적으로 상속 대상을 결정
+class Derived extends (condition ? Base1 : Base2) {}
+
+const derived = new Derived()
+```
+
+### 25.8.4. 서브클래스의 constructor
+
+```js
+constructor(...args) { super(...args)}
+```
+
+서브클래스에서 constructor를 생략하면 클래스에 constructor가 암묵적으로 정의된다. 수퍼클래스와 서브클래스 모두 constructor를 생략한 경우, 암묵적으로 constructor가 정의된다.
+
+```js
+class Base {
+  // constructor() {} // 암묵적으로 정의
+}
+
+class Derived extends Base {
+  // constructor(...args) {super(...args)} // 암묵적으로 정의
+}
+```
+
+### 25.8.5. super 키워드
+
+`super`는 함수처럼 호출하거나 `this`와 같이 식별자처럼 참조할 수 있는 특수한 키워드다.
+
+- super를 호출하면 수퍼클래스의 constructor를 호출한다.
+- super를 참조하면 수퍼클래스의 메서드를 호출할 수 있다.
+
+**super 호출**
+
+> super를 호출하면 수퍼클래스의 constructor를 호출한다.
+
+`super`를 호출할 때의 주의사항
+
+1. 서브클래스에서 constructor를 생략하지 않는 경우 서브클래스의 constructor에서는 반드시 super를 호출해야 함
+2. 서브클래스의 constructor에서 super를 호출하기 전에는 this를 참조할 수 없음
+3. super는 반드시 서브클래스의 constructor에서만 호출, 그렇지 않으면 에러 발생
+
+**super 참조**
+
+> 메서드 내에서 super를 참조하면 수퍼클래스의 메서드를 호출할 수 있다.
+
+1. 서브클래스의 프로토타입 메서드는 수퍼클래스의 프로토타입 메서드를 가리킨다.
+2. 서브클래스의 정적 메서드는 수퍼클래스의 정적 메서드를 가리킨다.
+
+### 25.8.6. 상속 클래스의 인스턴스 생성 과정
+
+**1. 서브클래스의 super 호출**
+
+자바스크립트 엔진은 수퍼클래스와 서브클래스를 구분하기 위해 `base` 또는 `derived`를 값으로 갖는 [[ConstructorKind]]를 갖는다. 다른 클래스를 상속받지 않는 클래스는 [[ConstructorKind]]의 값이 `base`로, 상속받는 클래스는 `derived`로 설정된다.
+다른 클래스를 상속받지 않는 클래스는 new 연산자와 함께 호출되었을 때 암묵적으로 빈 객체(인스턴스)를 생성하고 this에 바인딩한다. 그러나 서브클래스는 수퍼클래스에게 인스턴스 생성을 위임한다. 이 때문에 서브클래스의 constructor에서 반드시 super를 호출해야 한다. 인스턴스를 생성하는 주체가 수퍼클래스이므로 서브클래스의 constructor 내부에서 super를 호출하지 않으면 수퍼클래스의 constructor를 호출되지 않으므로 에러가 발생한다.
+
+**2. 수퍼클래스의 인스턴스 생성과 this 바인딩**
+
+수퍼클래스의 constructor 내부의 this는 생성된 인스턴스(수퍼클래스가 생성)를 가리킨다. 그러나 new 연산자와 함께 호출된 함수를 가리키는 new.target은 서브클래스를 가리킨다. 인스턴스는 new.target이 가리키는 서브클래스가 생성한 것으로 처리된다.
+
+**3. 수퍼클래스의 인스턴스 초기화**
+
+this에 바인딩되어 있는 인스턴스에 프로퍼티를 추가하고 constructor가 인수로 전달받은 초기값으로 인스턴스의 프로퍼티를 초기화한다.
+
+**4. 서브클래스 constructor로의 복귀와 this 바인딩**
+
+super의 호출이 종료되고 제어 흐름이 서브클래스 constructor로 돌아오며, super가 리턴한 인스턴스가 this에 바인딩된다. 서브클래스는 super가 리턴한 인스턴스를 this에 바인딩해 그대로 사용하는데, 이때문에 super가 호출되지 않으면 this 바인딩도 할 수 없다.
+
+**5. 서브클래스의 인스턴스 초기화**
+
+this에 바인딩되어 있는 인스턴스에 프로퍼티를 추가하고 constructor가 인수로 전달받은 초기값으로 인스턴스의 프로퍼티를 초기화한다.
+
+**6. 인스턴스 변환**
+
+"완성된 인스턴스가 바인딩된 this"가 암묵적으로 리턴된다.
+
+### 25.8.7. 표준 빌트인 생성자 함수 확장
+
+`String`, `Number`, `Array`같은 표준 빌트인 객체도 `extends` 키워드를 사용해 확장할 수 있다. 생성자 함수를 상속받아 확장한 클래스가 생성한 인스턴스는 생성자 함수와 클래스의 모든 메서드를 사용할 수 있다.
+
+```js
+// Array 생성자 함수를 상속받아 확장
+class MyArray extends Array {
+  uniq() {
+    return this.filter((v, i, self) => self.indexOf(v) === i)
+  }
+  average() {
+    return this.reduce((pre, cur) => pre + cur, 0) / this.length
+  }
+}
+
+const myArray = new MyArray(1, 1, 2, 3)
+
+// MyArray.prototype.uniq 호출
+console.log(myArray.uniq()) // MyArray(3) [1, 2, 3]
+```
+
+주의할 점은 Array.prototype의 메서드 중 `map`, `filter` 같이 새로운 배열을 리턴하는 메서드는 MyArray 클래스의 인스턴스를 리턴한다.
