@@ -1,0 +1,248 @@
+---
+title: 모던 자바스크립트 Deep Dive - 31. RegExp
+date: '2024-08-12T00:00:00'
+tags: ['javascript', 'book', 'deepdive']
+draft: false
+summary: 모던 자바스크립트 Deep Dive - 31. RegExp
+layout: PostSimple
+---
+
+## 31.1. 정규 표현식이란?
+
+**정규 표현식**: 은 일정한 패턴을 가진 문자열의 집합을 표현하기 위한 형식 언어
+문자열을 대상으로 패턴 매칭 기능을 통해 특정 패턴과 일치하는 문자열을 검색하거나 추출 또는 치환할 수 있다.
+반복문, 조건문 없이 패턴 정의를 통해 간단히 체크할 수 있지만 주석이나 공백을 허용하지 않고 여러 기호를 혼합해 가독성이 좋지 않다는 문제가 있다.
+
+## 31.2. 정규 표현식의 생성
+
+정규 표현식 객체(RegExp 객체)를 생성하기 위해 정규 표현식 리터럴과 `RegExp` 생성자 함수를 사용할 수 있다. 일반적으로는 정규 표현식 리터럴을 사용한다.
+
+![image](https://github.com/user-attachments/assets/52799714-f1ce-43e5-8204-f4c251b9f6d0)
+
+## 31.3. RegExp 메서드
+
+```js
+const target = 'Is this all there is?'
+const regExp = /is/
+
+regExp.exec(target) // [ 'is', index: 5, input: 'Is this all there is?', groups: undefined ]
+regExp.test(target) // true
+target.match(regExp) // [ 'is', index: 5, input: 'Is this all there is?', groups: undefined ]
+target.match(/is/g) // [ 'is', 'is' ]
+```
+
+### 31.3.1. RegExp.prototype.exec
+
+문자열에 대해 정규 표현식 패턴을 검색하고 매칭 결과를 배열로 리턴한다. 결과가 없는 경우 `null`을 리턴한다.
+
+### 31.3.2. RegExp.prototype.test
+
+문자열에 대해 정규 표현식 패턴을 검색하고 매칭 결과를 불리언 값으로 리턴한다.
+
+### 31.3.3. String.prototype.match
+
+대상 문자열과 정규 표현식과의 매칭 결과를 배열로 리턴한다.  
+`exec`는 g 플래그를 지정해도 첫 번째 매칭 결과만 리턴하지만 `String.prototype.match`는 g 플래그가 지정되면 모든 매칭 결과를 리턴한다.
+
+## 31.4. 플래그
+
+플래그는 정규 표현식의 검색 방식을 설정하기 위해 사용한다. 6개의 플래그 중 중요한 3개의 플래그는 다음과 같다.
+
+| 플래그 | 의미        | 설명                                                       |
+| :----: | ----------- | ---------------------------------------------------------- |
+|   i    | Ignore case | 대소문자를 구별하지 않고 패턴을 검색                       |
+|   g    | Global      | 대상 문자열 내에서 패턴과 일치하는 모든 문자열을 전역 검색 |
+|   m    | Multi line  | 문자열의 행이 바뀌더라도 계속 패턴 검색                    |
+
+플래그는 선택적으로 사용할 수 있고, 순서와 상관없이 여러 개의 플래그를 동시에 사용할 수 있다. 어떠한 플래그도 사용하지 않으면 대소문자를 구별해서 패턴을 검색하며, 매칭 대상이 1개 이상 존재해도 첫 번째 매칭한 대상만 검색 후 종료한다.
+
+```js
+const target = 'Is this all there is?'
+
+target.match(/is/) // is 문자열을 대소문자를 구별하여 한 번만 검색
+target.match(/is/i) // is 문자열을 대소문자를 구별하지 않고 한 번만 검색
+target.match(/is/g) // is 문자열을 대소문자를 구별하여 전역 검색
+target.match(/is/gi) // is 문자열을 대소문자를 구별하지 않고 전역 검색
+```
+
+## 31.5. 패턴
+
+정규 표현식은 패턴과 플래그로 구성된다.  
+패턴은 `/`로 열고 닫으며 문자열의 따옴표는 생략한다. 따옴표를 포함하면 따옴표까지도 패턴에 포함되어 검색된다.
+
+### 31.5.1. 문자열 검색
+
+패턴에 문자 또는 문자열을 지정하면 검색 대상 문자열에서 패턴으로 지정한 문자 또는 문자열을 검색한다.
+
+### 31.5.2. 임의의 문자열 검색
+
+`.`은 임의의 문자 한 개를 의미한다. 문자의 내용은 상관없다. `.`을 연속해서 사용해 패턴을 생성할 경우, 문자의 내용과 관계없이 `.`의 수만큼의 자리수 문자열과 매치한다.
+
+```js
+const target = 'Is this all there is?'
+
+const regExp = /.../g
+// 3자리 문자열을 대소문자를 구별해 전역 검색
+target.match(regExp) // ['Is ', 'thi', 's a', 'll ', 'the', 're ', 'is?']
+```
+
+### 31.5.3. 반복 검색
+
+{m, n}은 앞선 패턴이 최소m번, 최대 n번 반복되는 문자열을 의미한다. 콤마 뒤에 공백이 있으면 정상 동작하지 않는다.  
+{n}은 앞선 패턴이 n번 반복되는 문자열로 {n}은 {n,n}과 같다.  
+{n,}은 앞선 패턴이 최소 n번 이상 반복되는 문자열을 의미한다.  
++는 앞선 패턴이 최소 한번 이상 반복되는 문자열로 +는 {1,}과 같다.  
+?는 앞선 패턴이 최대 한 번(0번 포함) 이상 반복되는 문자열로 ?는 {0,1}과 같다.
+
+```js
+const target = 'A AA B BB Aa Bb AAA'
+
+// 'A가 최소 1번, 최대 2번 반복되는 문자열을 전역 검색'
+target.match(/A{1,2}/g) // [ 'A', 'AA', 'A', 'AA', 'A' ]
+// 'A'가 2번 반복되는 문자열을 전역 검색
+target.match(/A{2}/g) // [ 'AA', 'AA' ]
+// 'A'가 최소 2번 이상 반복되는 문자열을 전역 검색
+target.match(/A{2,}/g) // [ 'AA', 'AAA' ]
+// 'A'가 최소 한 번 이상 반복되는 문자열을 전역 검색
+target.match(/A+/g) // [ 'A', 'AA', 'A', 'AAA' ]
+// 'colo' 다음 'u'가 최대 한 번(0번 포함) 이상 반복되고 'r'이 이어지는 문자열을 전역 검색
+'color colour'.match(/colou?r/g) // [ 'color', 'colour' ]
+```
+
+### 31.5.4. OR 검색
+
+`|`는 or의 의미를 갖는다.
+
+```js
+const target = 'A AA B BB Aa Bb 12,345'
+
+// 'A' 또는 'B'를 전역 검색
+target.match(/A|B/g) // ['A', 'A', 'A', 'B', 'B', 'B', 'A', 'B']
+// 'A' 또는 'B'가 한 번 이상 반복되는 문자열을 전역 검색
+target.match(/A+|B+/g) // [ 'A', 'AA', 'B', 'BB', 'A', 'B' ]
+// [] 내의 문자는 or로 동작한다.
+target.match(/[AB]+/g) // [ 'A', 'AA', 'B', 'BB', 'A', 'B' ]
+// 'A' ~ 'Z'가 한 번 이상 반복되는 문자열을 전역 검색
+target.match(/[A-Z]+/g) // [ 'A', 'AA', 'B', 'BB', 'A', 'B' ]
+// 'A' ~ 'Z' 또는 'a' ~ 'z'가 한 번 이상 반복되는 문자열을 전역 검색
+target.match(/[A-Za-z]+/g) // [ 'A', 'AA', 'B', 'BB', 'Aa', 'Bb' ]
+// 숫자를 검색 (쉼표 때문에 매칭 결과가 분리)
+target.match(/[0-9]+/g) // [ '12', '345' ]
+// 쉼표를 패턴에 포함해 숫자를 검색
+target.match(/[0-9,]+/g) // [ '12,345' ]
+```
+
+`\d`는 숫자를 의미, `\D`는 반대로 숫자가 아닌 문자를 의미한다.  
+`\w`는 알파벳, 숫자, 언더스코어를 의미, `\W`는 알파벳, 숫자, 언더스코어가 아닌 문자를 의미한다.
+
+### 31.5.5. NOT 검색
+
+[...] 내의 ^는 not의 의미를 갖는다.
+
+```js
+const target = 'AA BB 12 Aa Bb'
+
+const regExp = /[^0-9]+/g
+// 숫자를 제외한 문자열을 전역 검색
+target.match(regExp) // ["AA BB ", " Aa Bb]
+```
+
+### 31.5.6. 시작 위치로 검색
+
+[...] 밖의 ^는 문자열의 시작을 의미한다.
+
+```js
+const target = 'https://94sssh-code.vercel.app'
+
+const regExp = /^https/
+// 'https'로 시작하는지 검색
+target.match(regExp) // true
+```
+
+### 31.5.7. 마지막 위치로 검색
+
+`$`는 문자열의 마지막을 의미한다.
+
+```js
+const target = 'https://94sssh-code.vercel.app'
+
+const regExp = /app$/
+// 'app'으로 끝나는지 검색
+target.match(regExp) // true
+```
+
+## 31.6. 자주 사용하는 정규표현식
+
+### 31.6.1. 특정 단어로 시작하는지 검사
+
+```js
+const url = 'https://94sssh-code.vercel.app/'
+
+// 'http://' 또는 'https://'로 시작하는지 검사
+/^http?:\/\//.test(url) // true
+// 다른 방법
+/^(http|https):\/\//.test(url) // true
+```
+
+### 31.6.2. 특정 단어로 끝나는지 검사
+
+```js
+const fileName = 'index.html'
+
+// 'html'로 끝나는지 검사
+/html$/.test(fileName) // true
+```
+
+### 31.6.3. 숫자로만 이루어진 문자열인지 검사
+
+```js
+const target = '12345'
+
+// 숫자로만 이루어진 문자열인지 검사
+/^\d+$/.test(target) // true
+```
+
+### 31.6.4. 하나 이상의 공백으로 시작하는지 검사
+
+```js
+const target = 'Hi!'
+
+// 하나 이상의 공백으로 시작하는지 검사
+/^[\s]+/.test(target) // true
+```
+
+### 31.6.5. 아이디로 사용 가능한지 검사
+
+```js
+const id = 'abc123'
+
+// 알파벳 대소문자 또는 숫자로 시작하고 끝나며 4~10자리인지 검사
+/^[A-Za-z0-9]{4,10}$/.test(id) // true
+```
+
+### 31.6.6. 메일 주소 형식에 맞는지 검사
+
+```js
+const email = 'test@gmail.com'
+
+/^[0-9a-zA-Z]([-_\.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_\.]?[0-9a-zA-Z])*\.[a-zA-Z]{2,3}$/.test(email) // true
+```
+
+### 31.6.7. 핸드폰 번호 형식에 맞는지 검사
+
+```js
+const cellphone = '010-1234-5678'
+
+/^\d{3}-\d{3,4}-\d{4}$/.test(cellphone) // true
+```
+
+### 31.6.8. 특수 문자 포함 여부 검사
+
+```js
+const target = 'abc#123'
+
+/[^A-Za-z0-9]/gi.test(target) // true
+
+// 특수 문자를 제거
+target.replace(/[^A-Za-z0-9]/gi, '') // abc123
+```
