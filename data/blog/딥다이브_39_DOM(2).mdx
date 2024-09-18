@@ -1,0 +1,267 @@
+---
+title: 모던 자바스크립트 Deep Dive - 39. DOM(2)
+date: '2024-09-18T00:00:00'
+tags: ['javascript', 'book', 'deepdive']
+draft: false
+summary: 모던 자바스크립트 Deep Dive - 39. DOM(2)
+layout: PostSimple
+---
+
+## 39.5. 요소 노드의 텍스트 조작
+
+### 39.5.1. nodeValue
+
+| 프로퍼티                   | setter | getter | 역할                                                                  |
+| -------------------------- | :----: | :----: | --------------------------------------------------------------------- |
+| `Node.prototype.nodeValue` |   o    |   o    | 노드 객체의 nodeValue 프로퍼티를 참조하면 텍스트 노드의 텍스트를 리턴 |
+
+setter와 getter 모두 존재하는 접근자 프로퍼티이므로 참조와 할당 모두 가능하다. 텍스트 노드가 아닌 노드의 nodeValue를 참조하면 `null`을 리턴한다.
+
+텍스트를 변경할 요소 노드를 취득 후, 취득한 요소 노드의 텍스트 노드를 탐색하고 nodeValue 프로퍼티를 사용하면 텍스트 노드의 값을 변경할 수 있다.
+
+### 39.5.2. textContent
+
+| 프로퍼티                     | setter | getter | 역할                                                                |
+| ---------------------------- | :----: | :----: | ------------------------------------------------------------------- |
+| `Node.prototype.textContent` |   o    |   o    | 요소 노드의 텍스트와 모든 자손 노드의 텍스트를 모두 취득하거나 변경 |
+
+요소 노드의 childNodes 프로퍼티가 리턴한 모든 노드들의 텍스트를 모두 리턴한다. 요소 노드의 콘텐츠 영역에 자식 요소 노드 없이 텍스트만 있다면 `firstChild.nodeValue`와 `textContent`는 같은 결과를 리턴하는데, 이 경우 `textContent`를 쓰는 것이 코드가 간단하다.
+
+```html
+<html>
+  <body>
+    <div id="foo">Hello</div>
+  </body>
+  <script>
+    const $foo = document.getElementById('foo')
+    console.log($foo.textContent === $foo.firstChild.nodeValue) // true
+  </script>
+</html>
+```
+
+textContent에 문자열을 할당하면 모든 자식 노드가 제거되고 할당한 문자열이 텍스트로 추가되며 HTML 마크업은 파싱되지 않는다.
+
+textContent와 비슷한 동작을 하는 `innerText` 프로퍼티가 있는데 다음과 같은 이유로 사용하지 않는 것이 좋다.
+
+1. innerText는 CSS에 순종적으로 비표시로 지정된 요소 노드의 텍스트를 리턴하지 않는다.
+2. CSS를 고려해야 하므로 textContent보다 느리다.
+
+## 39.6. DOM 조작
+
+새로운 노드를 생성하여 DOM에 추가하거나 기존 노드를 삭제 또는 교체하는 것. DOM 조작으로 새로운 노드가 추가되거나 삭제되면 리플로우와 리페인트가 발생한다.
+
+### 39.6.1. innerHTML
+
+| 프로퍼티                      | setter | getter | 역할                                      |
+| ----------------------------- | :----: | :----: | ----------------------------------------- |
+| `Element.prototype.innerHTML` |   o    |   o    | 요소 노드의 HTML 마크업을 취득하거나 변경 |
+
+textContent를 참조하면 HTML 마크업을 무시하고 텍스트만 리턴하지만 `innerHTML`은 HTML 마크업이 포함된 문자열을 그대로 리턴한다.
+
+```js
+document.getElementById('foo').innerHTML // Hello <span>world!</span>
+```
+
+요소 노드의 innerHTML에 할당한 HTML 마크업 문자열은 요소 노드의 자식으로 DOM에 반영된다. innerHTML을 사용한 DOM 조작은 간단하고 직관적이지만 크로스 사이트 스크립팅 공격에 취약하다.  
+또, innerHTML에 HTML 마크업 문자열을 할당하면 기존 자식 노드까지 모두 제거 후 새로 자식 노드를 생성해 DOM에 반영하므로 효율적이지 않고, 삽입될 위치를 지정할 수 없는 단점도 있다.
+
+### 39.6.2. insertAdjacentHTML 메서드
+
+기존 요소를 제거하지 않으면서 위치를 지정해 새로운 요소를 삽입한다. `insertAdjacentHTML`는 기존 요소에 영향을 주지 않고 새로 삽입될 요소만을 파싱해 자식 요소로 추가하므로 innerHTML보다 효율적이고 빠르다. 단, 크로스 사이트 스크립팅 공격에 취약하다는 점은 동일하다.
+
+### 39.6.3. 노드 생성과 추가
+
+**요소 노드 생성**
+
+`Document.prototype.createElement(tagName)`는 요소 노드를 생성하여 리턴한다. 태그 이름을 나타내는 문자열을 인수로 전달한다. `createElement`로 생성한 요소 노드는 자식 노드가 없고 기존 DOM에 추가되지 않은 상태이다.
+
+**텍스트 노드 생성**
+
+`Document.prototype.createTextNode(text)`는 텍스트 노드를 생성하여 리턴한다. 텍스트 노드의 값으로 사용할 문자열을 인수로 전달한다. `createTextNode`로 생성한 텍스트 노드는 요소 노드의 자식 노드로 추가되지 않은 상태이다.
+
+**텍스트 노드를 요소 노드의 자식 노드로 추가**
+
+`Node.prototype.appendChild(childNode)`는 매개변수 childNode에 인수로 전달한 노드를 `appendChild`를 호출한 노드의 마지막 자식 노드로 추가한다.
+
+요소 노드에 자식 노드가 하나도 없는 경우는 텍스트 노드를 추가하는 것보다 `textContent`를 사용하는 편이 간단하다. 단, 자식 노드가 있다면 모든 자식 노드가 제거되고 텍스트가 추가되므로 주의해야 한다.
+
+```js
+$li.appendChild(document.createTextNode('Banana'))
+
+$li.textContent = 'Banana'
+```
+
+**요소 노드를 DOM에 추가**
+
+`Node.prototype.appendChild`를 사용해 요소 노드를 마지막 자식 요소로 추가한다.
+
+### 39.6.4. 복수의 노드 생성과 추가
+
+DOM에 요소 노드를 반복해 추가하는 것은 비효율적이다. 여러 번 변경하기 위해 컨테이너 요소를 사용하면 DOM은 한 번만 변경되지만, 불필요한 컨테이너 요소가 DOM에 추가되는 부작용이 있다. 이를 해결하기 위해 `DocumentFragment` 노드를 사용할 수 있다.
+
+`Document.prototype.createDocumentFragment`는 비어 있는 `DocumentFragment` 노드를 생성하여 리턴한다. `DocumentFragment` 노드를 DOM에 추가하면 자신은 제거되고 자신의 자식 노드만 DOM에 추가된다. DOM 변경은 한 번만 발생해 리플로우와 리페인트도 한 번만 실행되므로 효율적이다.
+
+### 39.6.5. 노드 삽입
+
+**마지막 노드로 추가**
+
+`Node.prototype.appendChild`는 노드를 자신을 호출한 노드의 마지막 자식 노드로 DOM에 추가한다.
+
+**지정한 위치에 노드 삽입**
+
+`Node.prototype.insertBefore(newNodem childNode)`는 첫 번째 인수로 전달받은 노드를 두 번째 인수로 전달받은 노드 앞에 삽입한다. 두 번째 인수인 노드는 반드시 호출한 노드의 자식 노드여야 한다. 그렇지 않으면 DOMException 에러가 발생한다.
+
+### 39.6.6. 노드 이동
+
+DOM에 존재하는 노드를 `appendChild` 또는 `insertBefor`로 DOM에 다시 추가하면 현재 위치에서 노드를 제거하고 새로운 위치에 노드를 추가, 즉 노드가 이동한다.
+
+### 39.6.7. 노드 복사
+
+`Node.prototype.cloneNode([deep: true | false])`는 노드의 사본을 생성해 리턴한다. 매개변수 deep에 `true`를 인수로 전달하면 노드를 깊은 복사하여 모든 자손 노드가 포함된 사본을 생성하고, `false`를 인수로 전달하거나 생략하면 노드를 얕은 복사하여 노드 자신만의 사본을 생성한다. 얕은 복사로 생성된 요소 노드는 자손 노드를 복사하지 않으므로 텍스트 노드도 없다.
+
+### 39.6.8. 노드 교체
+
+`Node.prototype.replaceChild(newChild, oldChild)`는 자신을 호출한 노드의 자식 노드인 oldChild 노드를 newChild 노드로 교체한다. 이때 oldChild 노드는 DOM에서 제거된다.
+
+### 39.6.9. 노드 삭제
+
+`Node.prototype.removeChild(child)`는 인수로 전달한 노드를 DOM에서 삭제한다.
+
+## 39.7. 어트리뷰트
+
+### 39.7.1. 어트리뷰트 노드와 attributes 프로퍼티
+
+글로벌 어트리뷰트(id, class, style, title, lang, tabindex, draggable, hidden 등)와 이벤트 핸들러 어트리뷰트(onclick, onchange, onfocus, onblur, oninput, onkeypress, onkeydown, onkeyup, onmouseover, onsumbit, onload 등)는 모든 HTML 요소에서 공통적으로 사용할 수 있지만, 특정 HTML 요소에만 한정적으로 사용 가능한 어트리뷰트도 있다. 예시로 type, value, checked 어트리뷰트는 input 요소에만 사용할 수 있다. HTML 어트리뷰트당 하나의 어트리뷰트 노드가 생성되는데, 모든 어트리뷰트 노드의 참조는 유사 배열 객체이자 이터러블인 `NamedNodeMap` 객체에 담겨 요소 노드의 attributes 프로퍼티에 저장된다.
+
+어트리뷰트 노드는 `Element.prototpye.attributes`로 취득할 수 있다.
+
+### 39.7.2. HTML 어트리뷰트 조작
+
+요소 노드의 attributes 프로퍼티는 읽기 전용 접근자 프로퍼티로 값을 변경할 수는 없다.
+
+`Element.prototype.getAttribute/setAttribute`로 요소 노드에서 직접 HTML 어트리뷰트 값을 취득하거나 변경할 수 있다. 값을 참조하려면 `getAttribute`을, 값을 변경하려면 `setAttribute`을 사용한다.
+
+특정 HTML 어트리뷰트가 존재하는지 확인하려면 `Element.prototype.hasAttribute(attributeName)`을, 특정 HTML 어트리뷰트를 삭제하려면 `Element.prototype.removeAttribute(attributeName)`를 사용한다.
+
+### 39.7.3. HTML 어트리뷰트 vs. DOM 프로퍼티
+
+HTML 어트리뷰트는 다음과 같이 DOM과 중복 관리되는 것처럼 보인다.
+
+1. 요소 노드의 attributes 프로퍼티에서 관리하는 어트리뷰트 노드
+2. HTML 어트리뷰트에 대응하는 요소 노드의 프로퍼티(DOM 프로퍼티)
+
+HTML 어트리뷰트의 역할은 HTML 요소의 초기 상태 지정으로, 값이 변하지 않는다.
+
+input 요소의 value 어트리뷰트는 어트리뷰트 노드로 변환되어 attributes 프로퍼티에 저장되는데, 별도로 value 어트리뷰트 값은 요소 노드의 value 프로퍼티에 할당된다. 따라서 input 요소 노드가 생성되어 첫 렌더링이 끝난 시점까지 어트리뷰트 노드의 어트리뷰트 값과 value 프로퍼티에 할당된 값은 HTML 어트리뷰트 값과 동일하다.
+
+달라지는 것은 첫 렌더링 이후이다.
+
+요소 노드는 상태를 가지고 있는데, input 요소 노드는 사용자의 입력으로 바뀐 최신 상태와 HTML 어트리뷰트로 지정한 초기 상태를 모두 관리해야 한다. 즉 **요소 노드는 초기 상태와 최신 상태, 2개의 상태를 관리해야 한다. 요소 노드의 초기 상태는 어트리뷰트 노드가 관리하며, 최신 상태는 DOM 프로퍼티가 관리한다.**
+
+**어트리뷰트 노드**
+
+HTML 어트리뷰트로 지정한 초기 상태는 어트리뷰트 노드에서 관리한다. 사용자의 입력에 의해 상태가 변경되어도 초기 상태를 유지한다.  
+`getAttribute`로 초기 상태 값을 취득할 수 있고, `setAttribute`로 초기 상태 값을 변경한다.
+
+**DOM 프로퍼티**
+
+사용자가 입력한 최신 상태는 DOM 프로퍼티가 관리한다. DOM 프로퍼티는 입력에 동적으로 변경되어 최신 상태를 유지한다.
+
+**HTML 어트리뷰트와 DOM 프로퍼티의 대응 관계**
+
+대부분의 HTML 어트리뷰트와 DOM 프로퍼티는 1:1로 대응하지만, 그렇지 않은 경우도 있다.
+
+- id 어트리뷰트와 id 프로퍼티는 1:1 대응, 동일한 값으로 연동
+- input 요소의 value 어트리뷰트는 value 프로퍼티와 1:1 대응, value 어트리뷰트는 초기 상태, value 프로퍼티는 최신 상태를 가짐
+- class 어트리뷰트는 className, classList 프로퍼티와 대응
+- for 어트리뷰트는 htmlFor 프로퍼티와 1:1 대응
+- td 요소의 colspan 어트리뷰트는 대응하는 프로퍼티가 존재하지 않음
+- textContent 프로퍼티는 대응하는 어트리뷰트가 존재하지 않음
+- 어트리뷰트 이름은 대소문자를 구별하지 않지만 대응하는 프로퍼티 키는 카멜 케이스를 따름(maxlength => maxLength)
+
+**DOM 프로퍼티 값의 타입**
+
+`getAttribute` 메서드로 취득한 어트리뷰트 값은 문자열이지만, DOM 프로퍼티로 취득한 상태 값은 문자열이 아닐 수도 있다. 입력을 통해 `boolean`등으로 바뀔 수 있기 때문.
+
+### 39.7.4. data 어트리뷰트와 dataset 프로퍼티
+
+data 어트리뷰트와 dataset 프로퍼티를 사용하면 HTML 요소에 정의한 사용자 정의 어트리뷰트와 자바스크립트 간에 데이터를 교환할 수 있다. data 어트리뷰트는 data-user-id, data-role과 같이 data- 접두사를 붙여 사용한다.
+
+## 39.8. 스타일
+
+### 39.8.1. 인라인 스타일 조작
+
+| 프로퍼티                      | setter | getter | 역할                                                  |
+| ----------------------------- | :----: | :----: | ----------------------------------------------------- |
+| `HTMLElement.prototype.style` |   o    |   o    | 요소 노드의 인라인 스타일을 취득하거나 추가 또는 변경 |
+
+```html
+<html>
+  <body>
+    <div style="color: red">Hello</div>
+    <script>
+      const $div = document.querySelector('div')
+      console.log($div.style) // CSSStyleDeclaration { 0: "color", ... }
+
+      // 인라인 스타일 변경
+      $div.style.color = 'blue'
+
+      // 인라인 스타일 추가
+      $div.style.width = '100px'
+      $div.style.height = '100px'
+      $div.style.backgroundColor = 'yellow'
+    </script>
+  </body>
+</html>
+```
+
+CSS 프로퍼티는 케밥 케이스를 따르며, CSSStyleDeclaration 객체의 프로퍼티는 카멜 케이스를 따른다. 케밥 케이스를 사용하려면 대괄호 표기법을 사용하며, 단위 지정이 필요한 CSS 프로퍼티 값은 반드시 단위를 지정해야 한다.
+
+### 39.8.2. 클래스 조작
+
+class 어트리뷰트에 대응하는 DOM 프로퍼티는 `className`과 `classList`다.
+
+**className**
+
+`Element.prototype.className`은 HTML 요소의 class 어트리뷰트 값을 취득하거나 변경한다.
+
+**classList**
+
+`Element.prototype.classList`는 class 어트리뷰트의 정보를 담은 DOMTokenList 객체를 리턴한다.
+
+DOMTokenList 객체는 유사 배열 객체이며 이터러블이다. 다음과 같은 메서드들을 제공한다.
+
+- add(...className)  
+  1개 이상의 문자열을 class 어트리뷰트 값으로 추가한다.
+
+- remove(...className)  
+  문자열과 일치하는 클래스를 class 어트리뷰트에서 삭제한다. 일치하는 클래스가 없으면 에러 없이 무시된다.
+
+- item(index)  
+  index에 해당하는 클래스를 class 어트리뷰트에서 리턴한다.
+
+- contains(className)  
+  문자열과 일치하는 클래스가 class 어트리뷰트에 포함되어 있는지 확인한다.
+
+- replace(oldClassName, newClassName)  
+  첫 번째 인수로 전달한 문자열을 두 번째 인수로 전달한 문자열로 변경한다.
+
+- toggle(className[, force])  
+  문자열과 일치하는 클래스가 존재하면 제거하고, 존재하지 않으면 추가한다. 두 번째 인수로 불리언 값으로 평가되는 조건식을 전달할 수 있다. `true`면 추가, `false`면 제거한다.
+
+외에도 forEach, entries, keys, values, supports 등을 제공한다.
+
+### 39.8.3. 요소에 적용되어 있는 CSS 스타일 참조
+
+style 프로퍼티는 인라인 스타일만 리턴해 클래스나 상속으로 얻은 스타일은 참조할 수 없다. 모든 CSS 스타일을 참조하려면 `getComputedStyle` 메서드를 사용한다.
+
+`window.getComputedStyle(element[, pseudo])`는 첫 번째 인수로 전달한 요소 노드의 모든 스타일을 CSSStyleDeclaration 객체에 담아 리턴한다. 두 번째 인수로는 `:after`, `:before`와 같은 의사 요소 문자열을 전달할 수 있다.
+
+## 39.9. DOM 표준
+
+DOM은 현재 4개의 레벨이 있다.
+
+- [DOM Level 1](https://www.w3.org/TR/1998/REC-DOM-Level-1-19981001/)
+- [DOM Level 2](https://www.w3.org/TR/DOM-Level-2-Core/)
+- [DOM Level 3](https://www.w3.org/TR/2004/REC-DOM-Level-3-Core-20040407/)
+- [DOM Level 4](https://dom.spec.whatwg.org/)
