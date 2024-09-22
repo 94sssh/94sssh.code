@@ -1,6 +1,7 @@
 ---
 title: 모던 자바스크립트 Deep Dive - 39. DOM(1)
 date: '2024-09-16T00:00:00'
+lastmod: '2024-09-22'
 tags: ['javascript', 'book', 'deepdive']
 draft: false
 summary: 모던 자바스크립트 Deep Dive - 39. DOM(1)
@@ -127,6 +128,10 @@ DOM 트리 상의 노드를 탐색할 수 있도록 `Node`, `Element` 인터페�
 
 스페이스, 탭, 줄바꿈(개행) 등의 공백 문자는 공백 텍스트 노드를 생성한다.
 
+![공백텍스트노드](https://github.com/user-attachments/assets/667b9968-2f35-446f-bbbe-86ec1631b5c7)
+
+HTML 문서의 공백 문자는 공백 텍스트 노드를 생성한다. 노드를 탐색할 때 공백 문자가 생성한 공백 텍스트 노드에 주의해야 한다.
+
 ### 39.3.2. 자식 노드 탐색
 
 | 프로퍼티                            | 설명                                                                                                          |
@@ -137,6 +142,47 @@ DOM 트리 상의 노드를 탐색할 수 있도록 `Node`, `Element` 인터페�
 | Node.prototype.lastChild            | 마지막 자식 노드를 리턴한다. 텍스트 노드이거나 요소 노드다.                                                   |
 | Element.prototype.firstElementChild | 첫번째 자식 노드를 리턴한다. 요소 노드만 리턴한다.                                                            |
 | Element.prototype.lastElementChild  | 마지막 자식 노드를 리턴한다. 요소 노드만 리턴한다.                                                            |
+
+```html
+<html>
+  <body>
+    <ul id="fruits">
+      <li class="apple">Apple</li>
+      <li class="banana">Banana</li>
+      <li class="orange">Orange</li>
+    </ul>
+  </body>
+  <script>
+    const $fruits = document.getElementById('fruits')
+
+    // #fruits 요소의 모든 자식 노드를 탐색
+    // childNodes 프로퍼티가 반환한 NodeList에는 요소 노드뿐만 아니라 텍스트 노드도 포함되어 있다.
+    console.log($fruits.childNodes)
+    // NodeList(7) [text, li.apple, text, li.banana, text, li.orange, text]
+
+    // #fruits 요소의 모든 자식 노드를 탐색
+    // children 프로퍼티가 반환한 HTMLCollection에는 요소 노드만 포함되어 있다.
+    console.log($fruits.children)
+    // HTMLCollection(3) [li.apple, li.banana, li.orange]
+
+    // #fruits 요소의 첫 번째 자식 노드를 탐색
+    // firstChild 프로퍼티는 텍스트 노드를 반환할 수도 있다.
+    console.log($fruits.firstChild) // #text
+
+    // #fruits 요소의 마지막 자식 노드를 탐색
+    // lastChild 프로퍼티는 텍스트 노드를 반환할 수도 있다.
+    console.log($fruits.lastChild) // #text
+
+    // #fruits 요소의 첫 번째 자식 노드를 탐색
+    // firstElementChild 프로퍼티는 요소 노드만 반환한다.
+    console.log($fruits.firstElementChild) // li.apple
+
+    // #fruits 요소의 마지막 자식 노드를 탐색
+    // lastElementChild 프로퍼티는 요소 노드만 반환한다.
+    console.log($fruits.lastElementChild) // li.orange
+  </script>
+</html>
+```
 
 ### 39.3.3. 자식 노드 존재 확인
 
