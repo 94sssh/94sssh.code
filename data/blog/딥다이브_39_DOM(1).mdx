@@ -14,7 +14,7 @@ layout: PostSimple
 
 ### 39.1.1. HTML 요소와 노드 객체
 
-HTML 요소는 렌더링 엔진에 의해 파싱되어 DOM을 구성하는 요소 노드 객체로 변한된다. HTML 요소의 어트리뷰트는 어트리뷰트 노드로, 텍스트 콘텐츠는 텍스트 노드로 변환된다.
+HTML 요소는 렌더링 엔진에 의해 파싱되어 DOM을 구성하는 요소 노드 객체로 변환된다. HTML 요소의 어트리뷰트는 어트리뷰트 노드로, 텍스트 콘텐츠는 텍스트 노드로 변환된다.
 
 HTML 요소 간에는 계층적인 부자 관계가 형성되며, HTML 요소를 객체화한 모든 노드 객체들을 트리 자료구조로 구성한다.
 
@@ -116,7 +116,7 @@ CSS 선택자 문법을 사용하는 `querySelector`, `querySelectorAll`은 `get
 
 **`NodeList`**  
 실시간으로 노드 객체의 상태 변경을 반영하지 않는 DOM 컬렉션 객체  
-`NodeList`의 객체는 대부분 상태 변경을 실시간으로 반영하지 않는 non-live 상태르 동작해 `HTMLCollection`의 부작용을 회피할 수 있지만, childNodes 프로퍼티가 리턴하는 NodeList 객체는 HTMLCollection과 같이 실시간으로 노드 객체의 상태 변경을 반영하는 live 객체로 동작하므로 주의가 필요하다.
+`NodeList`의 객체는 대부분 상태 변경을 실시간으로 반영하지 않는 non-live 상태를 동작해 `HTMLCollection`의 부작용을 회피할 수 있지만, childNodes 프로퍼티가 리턴하는 NodeList 객체는 HTMLCollection과 같이 실시간으로 노드 객체의 상태 변경을 반영하는 live 객체로 동작하므로 주의가 필요하다.
 
 노드 객체의 상태 변경과 상관없이 안전하게 DOM 컬렉션을 사용하려면 HTMLCollection이나 NodeList 객체를 배열로 변환하여 사용하는 것을 권장한다.
 
