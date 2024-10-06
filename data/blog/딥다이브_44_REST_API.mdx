@@ -1,0 +1,98 @@
+---
+title: 모던 자바스크립트 Deep Dive - 44. REST API
+date: '2024-10-07T00:00:00'
+tags: ['javascript', 'book', 'deepdive']
+draft: false
+summary: 모던 자바스크립트 Deep Dive - 44. REST API
+layout: PostSimple
+---
+
+- **REST**: HTTP를 기반으로 클라이언트가 서버의 리소스에 접근하는 방식을 규정한 아키텍처
+- **REST API**: REST를 기반으로 서비스 API를 구현한 것
+- **RESTful**: REST의 기본 원칙을 성실히 지킨 서비스 디자인
+
+## 44.1. REST API의 구성
+
+REST는 자체 표현 구조로 구성되어 REST API만으로 HTTP 요청의 내용을 이해할 수 있다.
+
+| 구성 요소 | 내용                           | 표현 방법        |
+| --------- | ------------------------------ | ---------------- |
+| 자원      | 자원                           | URI(엔드포인트)  |
+| 행위      | 자원에 대한 행위               | HTTP 요청 메서드 |
+| 표현      | 자원에 대한 행위의 구체적 내용 | 페이로드         |
+
+## 44.2. REST API의 설계 원칙
+
+REST의 가장 중요한 원칙 2가지
+
+1. URI는 리소스를 표현하는 데 집중  
+   리소스 이름은 동사보다는 명사를 사용, 이름에 get 같은 행위에 대한 표현이 들어가선 안 된다.
+
+2. 행위에 대한 정의는 HTTP 요청 메서드를 통해 하기  
+   5가지 요청 메서드를 사용해 CRUD를 구현하며, 리소스에 대한 행위는 URI에 표현하지 않는다.
+
+## 44.3. REST API 실습
+
+### 44.3.4. GET 요청
+
+리소스에서 데이터를 취득할 때 사용
+
+```js
+const xhr = new XMLHttpRequest()
+
+xhr.open('GET', '/id')
+
+xhr.send()
+```
+
+### 44.3.5. POST 요청
+
+POST 요청 시에는 setRequestHeader를 사용해 서버로 전송할 페이로드의 MIME 타입을 지정
+
+```js
+const xhr = new XMLHttpRequest()
+
+xhr.open('POST', '/id')
+
+xhr.setRequestHeader('content-type', 'application/json')
+
+xhr.send(JSON.stringify({ id: 4, content: 'js', completed: false }))
+```
+
+### 44.3.6. PUT 요청
+
+특정 리소스 전체를 교체할 때 사용
+
+```js
+const xhr = new XMLHttpRequest()
+
+xhr.open('PUT', '/id/3')
+
+xhr.setRequestHeader('content-type', 'application/json')
+
+xhr.send(JSON.stringify({ id: 4, content: 'ts', completed: true }))
+```
+
+### 44.3.7. PATCH 요청
+
+특정 리소스의 일부를 수정할 때 사용
+
+```js
+const xhr = new XMLHttpRequest()
+
+xhr.open('PATCH', '/id/4')
+
+xhr.setRequestHeader('content-type', 'application/json')
+
+xhr.send(JSON.stringify({ completed: false }))
+```
+
+### 44.3.8. DELETE 요청
+
+```js
+const xhr = new XMLHttpRequest()
+
+xhr.open('DELETE', '/id/4')
+
+xhr.send(JSON.stringify({ completed: false }))
+```
