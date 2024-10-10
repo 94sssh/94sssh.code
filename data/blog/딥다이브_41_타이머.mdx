@@ -43,6 +43,8 @@ delay가 4ms 이하인 경우 최소 지연 시간 4ms가 지정된다.
 
 setTimeout 함수는 고유한 타이머 id를 리턴한다. 타이머 id를 clearTimeout에 전달하여 타이머를 취소할 수 있다.
 
+타이머 is는 브라우저 환경인 경우 숫자이며, Node.js 환경인 경우 객체다.
+
 ```js
 const timerId = setTimeout(() => console.log('Hi'), 1000)
 
