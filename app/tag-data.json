@@ -3,11 +3,12 @@
   "vite": 1,
   "test": 1,
   "javascript": 54,
-  "book": 57,
+  "book": 73,
   "deepdive": 47,
   "document": 7,
   "type": 1,
   "polymorphism": 1,
   "OOP": 2,
-  "프로그래머의뇌": 6
+  "프로그래머의뇌": 6,
+  "쏙쏙들어오는함수형코딩": 16
 }
