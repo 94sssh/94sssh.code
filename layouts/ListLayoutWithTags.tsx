@@ -93,6 +93,12 @@ export default function ListLayoutWithTags({
 
   const displayPosts = initialDisplayPosts.length > 0 ? initialDisplayPosts : posts
 
+  console.log(pathname.split('/tags/')[1])
+
+  console.log(decodeURIComponent(pathname.split('/tags/')[1]))
+
+  console.log(sortedTags)
+
   return (
     <>
       <div>
