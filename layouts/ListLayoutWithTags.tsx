@@ -20,7 +20,6 @@ interface ListLayoutProps {
   title: string
   initialDisplayPosts?: CoreContent<Blog>[]
   pagination?: PaginationProps
-  tag?: string
 }
 
 function Pagination({ totalPages, currentPage }: PaginationProps) {
@@ -86,7 +85,6 @@ export default function ListLayoutWithTags({
   title,
   initialDisplayPosts = [],
   pagination,
-  tag,
 }: ListLayoutProps) {
   const pathname = usePathname()
   const tagCounts = tagData as Record<string, number>
@@ -94,9 +92,6 @@ export default function ListLayoutWithTags({
   const sortedTags = tagKeys.sort((a, b) => tagCounts[b] - tagCounts[a])
 
   const displayPosts = initialDisplayPosts.length > 0 ? initialDisplayPosts : posts
-
-  console.log(tag)
-  console.log(displayPosts)
 
   return (
     <>
