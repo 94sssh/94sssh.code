@@ -1,0 +1,123 @@
+---
+title: '[딥다이브] - 17. 생성자 함수에 의한 객체 생성'
+date: '2024-05-12T00:00:00'
+tags: ['javascript', 'book', 'deepdive']
+draft: false
+summary: 17. 생성자 함수에 의한 객체 생성
+layout: PostSimple
+---
+
+## 17.1. Object 생성자 함수
+
+`new` 연산자와 `object` 생성자 함수를 호출하면 빈 객체를 생성해 리턴하는데, 이후 프로퍼티나 메서드를 추가해서 객체를 완성할 수 있다.
+
+```js
+const book = new Object()
+
+book.name = 'Deep Dive'
+book.describeBook = function () {
+  console.log('This book is' + this.name)
+}
+
+console.log(book) // { name: 'Deep Dive', describeBook: [Function (anonymous)] }
+book.describeBook() // This book isDeep Dive
+```
+
+**생성자 함수**: `new` 연산자와 함께 호출하여 객체(인스턴스)를 생성하는 함수  
+**인스턴스**: 생성자 함수에 의해 생성된 객체
+
+자바스크립트는 `Object` 생성자 함수 이외에도 `String`, `Number` , `Boolean` ,`Function` ,`Array` ,`Date` ,`RegExp` ,`Promise` 등의 빌트인 생성자 함수를 제공한다.
+
+빈 객체를 생성할 때는 객체 리터럴을 사용하는 것이 더 간편하며, `Object` 생성자 함수는 특별한 이유가 없다면 그다지 유용해 보이지 않는다.
+
+## 17.2. 생성자 함수
+
+### 17.2.1. 객체 리터럴에 의한 객체 생성 방식의 문제점
+
+객체 리터럴에 의한 객체 생성 방식은 간편하지만 단 하나의 객체만 생성한다. 동일한 프로퍼티를 갖는 객체를 여러 개 생성해야 하는 경우 비효율적이다. 그래서 프로퍼티 구조가 동일함에도 매번 같은 프로퍼티와 메서드를 기술해야 하는 단점이 있다.
+
+### 17.2.2. 생성자 함수에 의한 객체 생성 방식의 장점
+
+생성자 함수에 의한 객체 생성 방식은 템플릿처럼 사용하여 프로퍼티 구조가 동일한 객체 여러 개를 편하게 생성할 수 있다.
+
+```js
+funcion Circle(radius) {
+  this.radius = radius;
+  this.getDiameter = funtion () {
+    return 2 * this.radius;
+  }
+}
+
+const circle1 = new Circle(5)
+const circle2 = new Circle(10)
+
+console.log(circle1.getDiameter()) // 10
+console.log(circle2.getDiameter()) // 20
+```
+
+생성자 함수는 이름 그대로 객체(인스턴스)를 생성하는 함수다. 자바와 같은 클래스 기반 객체지향언어의 생성자와는 달리 형식이 정해져 있지 않고 일반 함수와 동일한 방법으로 생성자 함수를 정의하고 new 연산자와 함께 호출하면 해당 함수는 생성자 함수로 동작한다. new 연산자와 함께 생성자 함수를 호출하지 않으면 일반 함수로 동작한다.
+
+**this**: this는 객체 자신의 프로퍼티나 메서드를 참조하기 위한 자기 참조 변수로, this 바인딩은 함수 호출 방식에 따라 동적으로 결정된다.
+
+|    함수 호출 방식    |    this가 가리키는 값(this 바인딩)     |
+| :------------------: | :------------------------------------: |
+|  일반 함수로서 호출  |               전역 객체                |
+|   메서드로서 호출    | 메서드를 호출한 객체(마침표 앞의 객체) |
+| 생성자 함수로서 호출 | 생성자 함수가 (미래에) 생성할 인스턴스 |
+
+**바인딩**: 식별자와 값을 연결하는 과정
+
+### 17.2.3. 생성자 함수의 인스턴스 생성 과정
+
+1. **인스턴스 생성과 this 바인딩**  
+   암묵적으로 빈 객체(인스턴스)가 생성되고 this에 바인딩된다.
+2. **인스턴스 초기화**  
+   this에 바인딩되어 있는 인스턴스에 프로퍼티나 메서드를 추가하고 생성자 함수가 인수로 전달받은 초기값을 인스턴스 프로퍼티에 할당하여 초기화하거나 고정값을 할당한다.
+3. **인스턴스 반환**  
+   모든 처리가 끝나 완성된 인스턴스가 바인딩된 this를 암묵적으로 리턴한다. 만약 this가 아닌 다른 객체를 명시적으로 반환하면 this가 반환되지 못하고 return 문에 명시한 객체가 반환된다. 이는 생성자 함수의 기본 동작을 훼손하므로 생성자 함수 내부에서 return 문을 반드시 생략해야 한다.
+
+### 17.2.4. 내부 메서드 [[Call]]과 [[Construct]]
+
+일반 객체는 호출할 수 없지만 함수는 호출할 수 있다. 함수 객체는 함수로서 동작하기 위해 함수 객체만을 위한 `[[Environment]]`, `[[FormalParameters]]` 등의 내부 슬롯과 `[[Call]]`, `[[Construct]]` 같은 내부 메서드를 추가로 가지고 있다. 함수가 일반 함수로서 호출되면 함수 객체의 내부 메서드 `[[Call]]`이 호출되고 new 연산자와 함께 생성자 함수로서 호출되면 내부 메서드 `[[Construct]]`가 호출된다.
+
+```js
+funcion foo() {}
+
+foo() // 일반적인 함수로서 호출: [[Call]]이 호출
+new foo() // 생성자 함수로서 호출: [[Construct]]가 호출
+```
+
+내부 메서드 `[[Call]]`을 갖는 함수 객체를 callble(호출할 수 있는 객체 = 함수)이라 하며, 내부 메서드 `[[Construct]]`를 갖는 함수 객체를 constructor(생성자 함수로서 호출할 수 있는 함수), `[[Construct]]`를 갖지 않는 함수 객체를 non-constructor(생성자 함수로서 호출할 수 없는 함수)라고 부른다.
+
+### 17.2.5. constructor와 non-constructor의 구분
+
+자바스크립트 엔진은 함수 정의 방식에 따라 함수를 constructor와 non-constructor로 구분한다.
+
+- constructor: 함수 선언문, 함수 표현식, 클래스
+- non-constructor: 메서드(ES6 메서드 축약 표현), 화살표 함수
+
+### 17.2.6. new 연산자
+
+일반 함수와 생성자 함수에 특별한 형식적 차이는 없고, new 연산자와 함께 함수를 호출하면 `[[Call]]`이 아닌 `[[Constructor]]`가 호출되어 생성자 함수로 동작한다. 반대로 new 연산자 없이 생성자 함수를 호출하면 일반 함수로 호출된다.
+
+### 17.2.7. new.target
+
+생성자 함수가 new 연산자 없이 호출되는 것을 방지하기 위해 ES6에서는 `new.target`을 지원한다. 함수 내부에서 `new.target`을 사용하면 new 연산자와 함께 생성자 함수로서 호출되었는지 확인할 수 있다. new 연산자와 함께 생성자 함수로서 호출되면 함수 내부의 `new.target`은 함수 자신을 가리킨다. new 연산자 없이 일반 함수로서 호출된 함수 내부의 `new.target`은 `undefined`다.
+
+```js
+function Circle(radius) {
+  // 이 함수가 new 연산자와 함께 호출되지 않았다면 new.target은 undefined다.
+  if(!new.target){
+    // new 연산자와 함께 생성자 함수를 재귀 호출하여 생성된 인스턴스를 반환한다.
+    return new Circle(radius)
+  }
+  this.radius = radius;
+  this.getDiameter = funtion () {
+    return 2 * this.radius;
+  }
+}
+
+// new 연산자 없이 생성자 함수를 호출하여도 new.target을 통해 생성자 함수로서 호출된다.
+const circle = Circle(5);
+console.log(circle.getDiameter())
+```
