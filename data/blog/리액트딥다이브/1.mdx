@@ -1,0 +1,117 @@
+---
+title: '[리액트 딥다이브] - 02. 리액트 핵심 요소 깊게 살펴보기(1)'
+date: '2025-03-15'
+tags: ['react', 'book', '모던리액트DeepDive']
+draft: false
+summary: 02. 리액트 핵심 요소 깊게 살펴보기(1)
+layout: PostSimple
+---
+
+## 2.1. JSX란?
+
+### 2.1.1. JSX의 정의
+
+**JSXElement**: JSX를 구성하는 기본 요소
+
+- JSXOpeningElement: 시작 요소
+- JSXClosingElement: 종료 요소, JSXOpeningElement과 쌍으로 사용
+- JSXSelfClosingElement: 요소가 시작되고, 스스로 종료되는 형태. 내부적으로 자식을 포함할 수 없는 형태
+- JSXFragment: 아무 요소 없는 형태
+
+**JSXElementName**: JSXElement의 요소 이름으로 쓸 수 있는 것
+
+- JSXIdentifier: JSX 내부에서 사용할 수 있는 식별자
+- JSXNamespacedName: JSXIdentifier: JSXIdentifier의 조합, :로 묶는 건 한 개만 가능
+- JSXMemberExpression: JSXIdentifier. JSXIdentifier의 조합, 여러 개 이어서 묶는 것도 가능
+
+**JSXAttributes**: JSXElement에 부여할 수 있는 속성
+
+- JSXSpreadAttributes: 자바스크립트의 전개 연산자와 동일한 역할
+
+  - { ...AssignmentExpression }
+
+- JSXAttribute: 속성을 나타내는 키와 값
+
+  - JSXAttributeName
+  - JSXAttributeValue
+
+**JSXChildren**: JSXElement의 자식 값
+
+- JSXChild: JSXChildren을 이루는 기본 단위
+
+  - JSXText
+  - JSXElement
+  - JSXFragment
+  - { JSXChildExpression (optional) }
+
+**JSXStrings**: HTML에서 사용 가능한 문자열, `\`를 사용하는 데 제약이 없음,
+
+## 2.2. 가상 DOM과 리액트 파이버
+
+### 2.2.1. DOM과 브라우저 렌더링 과정
+
+- 브라우저의 렌더링 과정
+  1. 요청 주소를 방문해 HTML 파일 다운로드
+  2. 브라우저의 렌더링 엔진은 HTML을 파싱해 DOM 노드로 구성된 DOM트리를 만듦
+  3. 2번 과정 중 CSS 파일을 만나면 CSS 파일도 다운로드
+  4. 브라우저의 렌더링 엔진은 CSS도 파싱해 CSSOM트리를 만듦
+  5. 2번에서 만든 DOM 노드를 순회하는데, 모든 노드가 아닌 눈에 보이는 노드만 방문(`display: none`과 같은 요소는 방문 X)
+  6. 눈에 보이는 노드를 대상으로 CSSOM 정보를 찾아 CSS 스타일 정보를 노드에 적용
+
+### 2.2.2. 가상 DOM의 탄생 배경
+
+하나의 인터랙션으로 페이지 내부의 DOM의 여러 가지가 변경되는 경우, 모든 변경 사항을 추적하는 수고스러움을 해결하기 위해 가상 DOM이 탄생.
+
+가상 DOM은 웹페이지가 표시해야 할 DOM을 먼저 메모리에 저장하고 리액트가 준비가 되면 실제 DOM에 반영.
+
+메모리에서 DOM 계산 과정을 거치게 되어 여러 번 발생헀을 렌더링 과정을 최소화할 수 있음.
+
+### 2.2.3. 가상 DOM을 위한 아키텍처, 리액트 파이버
+
+**리액트 파이버**  
+리액트에서 관리하는 자바스크립트 객체로 가상 DOM과 렌더링 과정 최적화를 가능하게 해줌
+
+파이버 재조정자가 관리하며 가상 DOM과 실제 DOM을 비교해 변경 사항을 수집하고, 변경 정보를 가지고 차이가 있는 부분에 파이버를 기준으로 화면에 렌더링을 요청하는 역할
+
+재조정: 가상 DOM과 실제 DOM을 비교하는 작업(알고리즘)
+리액트 파이버의 목표: 웹 애플리케이션에서 발생하는 반응성 문제 해결
+
+스택 알고리즘으로 인해 발생하는 리액트의 비효율성을 해결하기 위해 탄생한 개념
+
+파이버는 하나의 작업 단위로 구성되어 있다. 리액트는 작업 단위를 하나씩 처리하고 `finishedWork()`라는 작업으로 마무리하고 작업을 커밋해 DOM에 가시적인 변경사항을 만듦.
+
+1. 렌더 단계에서 사용자에게 노출되지 않는 모든 비동기 작업을 수행. 파이버의 작업, 우선순위를 지정하거나 중지시키거나 버리는 등의 작업이 일어남
+
+2. 커밋 단계에서 DOM에 실제 변경 사항을 반영하기 위한 작업인 `commitWork()`가 실행, 이 과정은 동기식으로 일어나고 중단될 수 없음
+
+파이버 요소는 단순한 자바스크립트 객체로 구성되어 있으며, 리액트의 요소와 유사하지만 중요한 차이는 리액트 요소는 렌더링마다 새로 생성되는 반면, 파이버는 가급적 재사용된다.
+
+**파이버의 주요 속성**
+
+- tag: 파이버와 하나의 element가 1:1로 매칭된 정보를 가지고 있는 것
+- stateNode: 파이버 자체에 대한 참조(reference) 정보
+- child, sibling, return: 파이버 간의 관계 개념을 나타내는 속성
+- index: sibling 사이에서 자신의 위치가 몇 번째인지 숫자로 표현
+- pendingProps: 아직 작업을 처리하지 못한 props
+- memoizedProps: pendingProps를 기준으로 렌더링이 완료된 이후 pendingProps를 memoizedProps로 저장해 관리
+- updateQueue: 상태 업데이트, 콜백 함수, DOM 업데이트 등 필요한 작업을 담아두는 큐
+- memoizedState: 함수 컴포넌트의 훅 목록이 저장됨
+- alternate: 리액트의 두 개의 트리 중, 반대편 트리의 파이버
+
+**리액트 파이버 트리**
+
+파이버 트리는 리액트 내부에 두 개가 존재하는데 하나는 현재 모습을 담은 파이버 트리, 다른 하나는 작업 중인 상태를 나타내는 workInProgress 트리다.  
+리액트 파이버의 작업이 끝나면 리액트는 단순히 포인터 변경을 통해 workInProgress 트리를 현재 트리로 바꾸는데, 이를 `더블 버퍼링`이라 한다. 이는 불완전한 트리를 보여주지 않기 위함이며 더블 버퍼링은 커밋 단계에서 수행된다.
+
+**파이버의 작업 순서**
+
+1. 리액트는 `beginWork()`함수를 실행해 파이버 작업을 수행, 더 이상 자식이 없는 파이버를 만날 때까지 트리 형식으로 시작
+2. 1번 작업이 끝나면 다음 `completeWork()`함수를 실행해 파이버 작업을 완료
+3. 형제가 있다면 형제로 넘어감
+4. 2번, 3번이 모두 끝났다면 return으로 돌아가 작업을 완료
+
+### 2.2.4. 파이버와 가상 DOM
+
+파이버는 리액트 컴포넌트에 대한 정보를 1:1로 가지고 있으며, 리액트 아키텍처 내에서 비동기로 작동한다.
+
+그러나 브라우저 구조인 DOM은 동기적으로 작동하며, 작업이 많아 불완전하게 표시될 수 있는 가능성이 높으므로 메모리상에서 먼저 수행하고 최종 결과물만 DOM에 적용하는 것.
