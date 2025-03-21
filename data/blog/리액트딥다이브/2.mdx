@@ -13,7 +13,7 @@ layout: PostSimple
 
 리액트 16.8 이전엔 클래스 컴포넌트가 대다수.
 
-```tsx
+```jsx
 import React from 'react'
 
 // props 타입 선언
@@ -66,50 +66,52 @@ class SampleComponent extends React.Component<SampleProps, SampleState> {
     )
   }
 }
+
 ```
 
-- constructor(): 컴포넌트가 초기화되는 시점에 호출되어 state를 초기화  
-  ES2022에 추가된 클래스 필드로 인해 별도의 초기화 과정을 거치지 않고 클래스 내부에 필드를 선언할 수 있게 됨
-- props: 컴포넌트에 특정 속성을 전달
-- state: 클래스 컴포넌트 내부에서 관리하는 값이며 항상 객체여야 함, 변화가 있을 때마다 리렌더링 발생
-- 메서드: 렌더링 함수 내부에서 사용되는 함수, 보통 DOM에서 발생하는 이벤트와 함께 사용
+- `constructor()`: 컴포넌트가 초기화되는 시점에 호출되어 state를 초기화. ES2022에 추가된 클래스 필드로 인해 별도의 초기화 과정을 거치지 않고 클래스 내부에 필드를 선언할 수 있게 됨
+- `props`: 컴포넌트에 특정 속성을 전달
+- `state`: 클래스 컴포넌트 내부에서 관리하는 값이며 항상 객체여야 함, 변화가 있을 때마다 리렌더링 발생
+- `메서드`: 렌더링 함수 내부에서 사용되는 함수, 보통 DOM에서 발생하는 이벤트와 함께 사용
 
 **클래스 컴포넌트의 생명주기 메서드**  
 클래스 컴포넌트는 생명주기 메서드에 의존, 생명주기 메서드가 실행되는 시점은 3가지
 
-- mount: 컴포넌트가 마운팅(생성)되는 시점
-- update: 이미 생성된 컴포넌트의 내용이 변경(업데이트)되는 시점
-- unmount: 컴포넌트가 더 이상 존재하지 않는 시점
+- `mount`: 컴포넌트가 마운팅(생성)되는 시점
+- `update`: 이미 생성된 컴포넌트의 내용이 변경(업데이트)되는 시점
+- `unmount`: 컴포넌트가 더 이상 존재하지 않는 시점
 
-- render()  
+**생명주기 메서드**
+
+- `render()`  
   리액트 클래스 컴포넌트의 유일한 필수 값, 컴포넌트가 UI를 렌더링하기 위해 사용, 마운트와 업데이트 과정에서 일어남  
   순수 함수여야 하므로 render() 내부에서 this.setState룰 호출하면 안 됨
 
-- componentDidMount()  
+- `componentDidMount()`  
   클래스 컴포넌트가 마운트되고 준비되면 호출, this.setState를 호출하고 state가 변경되면 즉시 리렌더링을 시도하며, 브라우저가 UI를 업데이트하기 전에 실행되어 사용자는 변경을 눈치챌 수 없음  
   성능 문제를 일으킬 수 있으므로 state를 다루는 것은 생성자에서 하는 것이 좋음
 
-- componentDidUpdate()  
+- `componentDidUpdate()`  
   컴포넌트 업데이트 후 바로 실행, state나 props의 변화에 따라 DOM을 업데이트
 
-- componentWillUnmount()  
+- `componentWillUnmount()`  
   컴포넌트가 언마운트되거나 더 이상 사용되지 않기 직전에 호출, 클린업 함수를 호출하기 위한 최적의 위치
 
-- shouldComponentUpdate()  
+- `shouldComponentUpdate()`  
   state나 props의 변경으로 리액트 컴포넌트가 리렌더링되는 것을 막고 싶을 때 사용, 컴포넌트에 영향을 받지 않는 변화에 대해 정의
 
-- static getDerivedStateFromProps()  
+- `static getDerivedStateFromProps()`  
   사라진 componentWillReceiveProps를 대체하는 메서드, render()를 호출하기 직전에 호출  
   static으로 선언되어 있어 this에 접근할 수 없음
 
-- getSnapShotBeforeUpdate()  
+- `getSnapShotBeforeUpdate()`  
   componentWillUpdate()를 대체하는 메서드, DOM이 업데이트되기 직전에 호출  
   DOM에 렌더링되기 전 윈도우 크기 조절이나 스크롤 위치 조정 등의 작업 처리에 유용
 
-- getDerivedStateFromError()  
+- `getDerivedStateFromError()`  
   에러 상황에서 실행되는 메서드, 자식 컴포넌트에서 에러가 발생했을 때 호출되는 에러 메서드
 
-- componentDidCatch  
+- `componentDidCatch`  
   에러 상황에서 실행되는 메서드, 자식 컴포넌트에서 에러가 발생했을 때 실행되며, getDerivedStateFromError에서 에러를 잡고 state를 결정한 이후 실행  
   getDerivedStateFromError()에서 하지 못한 부수 효과를 수행할 수 있음, render 단계가 아닌 커밋 단계에서 실행되기 때문
 
@@ -151,8 +153,7 @@ class SampleComponent extends React.Component<SampleProps, SampleState> {
 ### 2.4.2. 리액트의 렌더링이 일어나는 이유
 
 1. 최초 렌더링: 처음 애플리케이션 진입 시 수행
-2. 리렌더링: 최초 렌더링 발생 후 일어나는 모든 렌더링  
-    리렌더링이 발생하는 경우, 이외의 경우는 렌더링을 일으키지 않는다.
+2. 리렌더링: 최초 렌더링 발생 후 일어나는 모든 렌더링, 리렌더링이 발생하는 경우, 이외의 경우는 렌더링을 일으키지 않는다.
    - 클래스 컴포넌트의 setState가 실행
    - 클래스 컴포넌트의 forceUpdate가 실행
    - 함수 컴포넌트의 `useState()`의 두 번째 배열 요소인 setter가 실행
@@ -172,12 +173,12 @@ class SampleComponent extends React.Component<SampleProps, SampleState> {
 
 ### 2.4.4. 렌더와 커밋
 
-- 렌더 단계  
+- `렌더 단계`  
   컴포넌트를 렌더링하고 변경 사항을 계산하는 모든 작업  
   렌더링 프로세스에서 컴포넌트를 실행한 결과와 이전 가상 DOM을 비교하는 과정을 거쳐 변경이 필요한 컴포넌트를 체크하는 단계  
   `type`, `props`, `key` 세 가지를 비교해 하나라도 변경된 것이 있으면 체크해 둔다.
 
-- 커밋 단계  
+- `커밋 단계`  
   렌더 단계의 변경 사항을 실제 DOM에 적용해 사용자에게 보여주는 과정  
   커밋 단계가 끝나야 브라우저의 렌더링이 발생
 
