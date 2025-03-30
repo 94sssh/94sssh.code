@@ -220,7 +220,7 @@ function ParentComponent() {
 function ChildComponent() {
   const value = useContext(Context);
 
-  return <>{value ? value.hello : ''}</> // javacript 반환
+  return value ? value.hello : ''; // javacript 반환
 }
 ```
 
