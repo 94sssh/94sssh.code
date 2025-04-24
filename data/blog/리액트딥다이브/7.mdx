@@ -1,0 +1,85 @@
+---
+title: '[리액트 딥다이브] - 05. 리액트와 상태 관리 라이브러리(2)'
+date: '2025-04-24'
+tags: ['react', 'book', '모던리액트DeepDive']
+draft: false
+summary: 05. 리액트와 상태 관리 라이브러리(2)
+layout: PostSimple
+---
+
+### 5.2.4. 상태 관리 라이브러리 Recoil, Jotai, Zustand 살펴보기
+
+`Recoil`과 `Jotai`는 Context와 Provider, 훅을 기반으로 작은 상태를 효율적으로 관리하는 데 초점  
+`Zustand`는 리덕스와 비슷하게 큰 스토어를 기반으로 상태를 관리, 스토어의 클로저를 기반으로 스토어의 상태를 구독하는 컴포넌트에 변경을 알려 리렌더링하는 방식
+
+**페이스북이 만든 상태 관리 라이브러리 Recoil**
+
+페이스북이 만든 리액트를 위한 상태 관리 라이브러리, 최소 상태 개념인 Atom을 선보임
+
+![Image](https://github.com/user-attachments/assets/5ead55c2-41d4-43a5-ac0a-f76366ace41f)
+![Image](https://github.com/user-attachments/assets/f60f3dc2-7d76-4f8c-aa8a-9392047803fe)
+
+(현재 개발 종료)
+
+**Recoil에서 영감을 받은, 그러나 조금 더 유연한 Jotai**
+
+`Recoil`의 atom 모델에 영감을 받아 만들어진 라이브러리
+
+상향식(bottom-up) 접근법을 취하는데, 작은 단위의 상태를 위로 전파할 수 있는 구조로 리액트 Context의 불필요한 리렌더링 문제를 해결하고자 설계됨.  
+메모이제이션이나 최적화를 거치지 않아도 리렌더링이 발생되지 않도록 설계되어 있음.
+
+- atom
+
+  최소 단위의 상태로, atom 하나만으로 상태를 만들 수도, 파생된 상태를 만들 수도 있음.  
+  `Recoil`의 atom과 달리 key를 필요로 하지 않으며, init, read, write가 담긴 config라는 객체를 리턴.  
+  atom에 상태를 저장하지 않음
+
+- useAtomValue
+
+  useReducer가 반환하는 상태값은 3가지다.
+
+  - version - store의 버전
+  - valueFromReducer - atome에서 get 수행 시 반환값
+  - atomFromReducer - atom 자체
+
+  `Recoil`과 달리 컴포넌트 루트 레벨에서 Context가 없어도 되는 이유는 Provider가 없는 형태로 기본 스토어를 루트에 생성하고 값을 저장하기 때문. atom의 값은 store에 존재하는데, store에 atom 객체 그 자체를 키로 활용해 값을 저장함.
+
+  넘겨받은 atom이 Reducer를 통해 스토어에 있는 atom과 달라지는 경우, subscribe를 수행하다가 값이 달라지는 경우에 rerenderIfChanged로 리렌더링을 일으킨다.
+
+- useAtom
+
+  `useState`와 동일한 형태의 배열을 리턴한다. 첫 번째는 useAtomValue의 결과, 두 번째는 useSetAtom 훅이다.
+
+- 특징
+
+  `Recoil`의 atom 개념을 도입하면서도 API가 간결.  
+  WeakMap을 통해 객체의 참조로 값을 관리하기 때문에 키를 관리할 필요가 없고, 파생된 상태를 만들기 위해 selector 없이 atom만으로 파생된 상태를 만들 수 있는 등 간결함.
+
+**작고 빠르며 확장에도 유연한 Zustand**
+
+`리덕스`에 영감을 받아 만들어진 라이브러리
+
+하나의 스토어를 중앙 집중형으로 활용해 스토어 내부에서 상태를 관리.
+
+- Zustand의 바닐라 코드
+
+  partial과 replace로 나누어, partial은 state의 일부분만 변경할 때, replace는 state를 완전히 새로운 값으로 변경할 때 사용. 이를 통해 state의 값이 객체일 때 필요에 따라 나눠서 사용이 가능
+
+  `zustand`의 createStore는 순수한 자바스크립트 코드로 쓰여 리액트를 비롯한 어떤 프레임워크와도 독립적으로 사용 가능
+
+  getState와 setState를 통해 현재 스토어의 값을 받아오거나 재정의할 수 있고, subscribe를 통해 스토어의 값이 변경될 때마다 특정 함수를 실행할 수 있음
+
+- Zustand의 리액트 코드
+
+  create: 리액트에서 사용할 수 있는 스토어를 만들어주는 변수, useStore를 통해 해당 스토어가 즉시 리액트 컴포넌트에서 사용할 수 있도록 만들어짐
+
+  실제로 어떤 초기 세팅도 필요없이 바로 만들어서 사용하면 되서 실무에서 적용하기에 굉장히 편했다. 러닝 커브도 거의 없음.
+
+- 특징
+
+  보일러 플레이트 없이 빠르게 스토어를 만들고 사용할 수 있음.
+
+### 5.2.5. 정리
+
+![Image](https://github.com/user-attachments/assets/c2477b96-e0cc-4e96-8ecb-96e273984f83)
+(2025-04 라이브러리의 다운로드 횟수)
