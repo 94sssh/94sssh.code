@@ -1,0 +1,217 @@
+---
+title: '[리액트 딥다이브] - 08. 좋은 리액트 코드 작성을 위한 환경 구축하기'
+date: '2025-05-15'
+tags: ['react', 'book', '모던리액트DeepDive']
+draft: false
+summary: 08. 좋은 리액트 코드 작성을 위한 환경 구축하기
+layout: PostSimple
+---
+
+## 8.1. ESLint를 활용한 정적 코드 분석
+
+### 8.1.1. ESLint 살펴보기
+
+**ESLint는 어떻게 코드를 분석할까?**
+
+1. 자바스크립트 코드를 문자열로 읽음
+2. 자바스크립트 코드를 분석할 수 있는 파서(parser)로 코드를 구조화
+3. 2번에서 구조화한 트리를 AST라 하며, AST를 기준으로 규칙과 대조
+4. 규칙과 대조해 위반한 코드를 알리거나 수정
+
+### 8.1.2. eslint-plugin과 eslint-config
+
+**eslint-plugin**  
+eslint-plugin 접두사로 시작하는 플러그인은 해당 규칙을 모아놓은 패키지
+
+**eslint-config**  
+eslint-plugin이 특정 프레임워크나 도메인 등의 규칙을 제공하는 패키지라면 eslint-config는 eslint-plugin을 묶어서 세트로 제공하는 패키지
+
+### 8.1.3. 나만의 ESLint 규칙 만들기
+
+일괄적으로 고쳐야 하는 코드가 있을 때 빠르고 실수를 방지할 수 있어 효과적
+
+**이미 존재하는 규칙을 커스터마이징해서 적용하기: import React를 제거하기 위한 ESLing 규칙 만들기**  
+두 코드의 크기가 완전히 동일해도 import React를 제거하는 것은 웹팩의 트리쉐이킹 소요 시간을 줄여주고, 빌드 속도가 빨라지고 파일의 크기도 조금이나마 줄어듬
+
+이를 적용하기 위해 기존 규칙(no-restricted-imports)을 커스터마이징해 import React를 금지할 수 있음, 또 lodash같은 트리쉐이킹이 되지 않는 라이브러리를 import 하는 것도 방지할 수 있음
+
+```js
+module.exports = {
+  rules: {
+    'no-restricted-imports': [
+      'error',
+      {
+        // paths에 금지시킬 모듈을 추가
+        paths: [
+          {
+            // 모듈명
+            name: 'react',
+            // 모듈의 이름
+            importNames: ['default'],
+            // 경고 메시지
+            message:
+              "import React from 'react'는 react 17부터 더 이상 필요하지 않습니다. 필요한 것만 react로부터 import해서 사용해 주세요.",
+          },
+        ],
+      },
+      {
+        name: 'lodash',
+        message:
+          'lodash는 CommonJS로 작성돼 있어 트리쉐이킹이 되지 않아 번들 사이즈를 크게 합니다. lo-dash/* 형식으로 import 해주세요.',
+      },
+    ],
+  },
+}
+```
+
+**완전히 새로운 규칙 만들기: new Date를 금지시키는 규칙**  
+new Date()를 사용하지 못하게 하고 서버의 시간을 반환하는 함수인 ServerDate()를 만들어 해당 함수만 사용하는 규칙을 만들기  
+먼저 자바스크립트 코드 내부에서 new Date()의 존재를 파악한다. espree에서 AST를 어떻게 만드는지 살펴본다. 그 후 파악한 new Date()의 노드를 금지하는 규칙을 만든다.
+
+```js
+/**
+ * @type {import('eslint').Rule.RuleModule}
+ */
+module.exports = {
+  meta: {
+    type: 'suggestion',
+    docs: {
+      description: 'disallow use of the new Date()',
+      recommended: false,
+    },
+    fixable: 'code',
+    schema: [],
+    messages: {
+      message:
+        'new Date()는 클라이언트에서 실행 시 해당 기기의 시간에 의존적이라 정확하지 않습니다. 현재 시간이 필요하다면 ServerDate()를 사용해 주세요.',
+    },
+  },
+  create: function (context) {
+    return {
+      NewExpression: function (node) {
+        if (node.callee.name === 'Date' && node.arguments.length === 0) {
+          context.report({
+            node: node,
+            messageId: 'message',
+            fix: function (fixer) {
+              return fixer.replaceText(node, 'ServerDate()')
+            },
+          })
+        }
+      },
+    }
+  },
+}
+```
+
+규칙은 하나씩 만들어 배포하는 것은 불가능하고, 반드시 eslint-plugin 형태로 규칙을 묶음으로 배포하는 것만 가능함
+
+빈 패키지를 만들고, yo나 generate-eslint를 활용해 eslint-plugin을 구성할 환경을 구성해 작성한 규칙을 붙여놓고 npm publish로 배포할 수 있음
+
+### 8.1.4. 주의할 점
+
+**Prettier와의 충돌**  
+현재는 Eslint의 코드 포맷팅 규칙이 사라져 Prettier와 최신 버전을 사용할 프로젝트라면 충돌할 걱정을 하지 않아도 될 것 같다.  
+그렇지 않다면 eslint-plugin-prettier를 통해 서로 충돌을 피할 수 있음
+
+**규칙에 대한 예외 처리, 그리고 react-hooks/no-exhaustive-deps**  
+일부 코드에서 특정 규칙을 임시로 제외시키고 싶다면 eslint-disable- 주석을 사용
+
+```js
+// 특정 줄만 제외
+console.log('hello world') // eslint-disable-line no-console
+
+// 다음 줄 제외
+// eslint-disable-next-line no-console
+console.log('hello world')
+
+// 특정 여러 줄 제외외
+/* eslint-disable no-console */
+console.log('JavaScript debug log')
+console.log('eslint is disabled now')
+/* eslint-disable no-console */
+
+// 파일 전체에서 제외
+/* eslint-disable no-console */
+console.log('hello world')
+```
+
+**ESLing 버전 충돌**  
+ESLint 공식 문서에서는 ESLint를 peerDependencies로 설정할 것을 권장
+
+## 8.2. 리액트 팀이 권장하는 리액트 테스트 라이브러리
+
+### 8.2.1. React Testing Library란?
+
+DOM Testing Library를 기반으로 만들어진 테스팅 라이브러리로, 리액트를 기반으로 한 테스트를 수행함  
+DOM Testing Library는 jsdom을 기반으로 하는데, jsdom은 순수한 자바스크립트로 작성된 라이브러리로, Node.js 같은 환경에서 HTML과 DOM을 사용할 수 있게 해준다.
+
+리액트 테스팅 라이브러리를 활용해 실제로 리액트 컴포넌트를 렌더링하지 않아도 렌더링되고 있는지 확인할 수 있음. 테스트 환경 구축의 복잡한 과정을 거치지 않아 편하고, 테스트 소요 시간을 효과적으로 단축 가능.
+
+### 8.2.2. 자바스크립트 테스트의 기초
+
+기본적인 테스트 코드 작성 방식
+
+1. 테스트할 함수나 모듈 선정
+2. 함수나 모듈의 반환 기대값을 작성
+3. 실제 반환 값을 작성
+4. 3번의 기댓값과 2번의 결과가 일치하는지 확인
+5. 기대와 결과가 같다면 성공, 아니면 에러
+
+### 8.2.3. 리액트 컴포넌트 테스트 코드 작성하기
+
+리액트에서 컴포넌트 테스트의 과정
+
+1. 컴포넌트 렌더링
+2. 필요하다면 컴포넌트에서 특정 액션 수행
+3. 컴포넌트 렌더링과 2번의 액션을 통해 기댓값과 결과를 비교
+
+**리액트 컴포넌트에서 테스트하는 일반적인 시나리오는 특정한 무언가를 지닌 HTML 요소가 있는지 여부**로, 주로 3가지 방법으로 확인할 수 있음
+
+- getBy...: 인수의 조건에 맞는 요소를 반환, 해당 요소가 없거나 두 개 이상이면 에러 발생
+- findBy...: getBy와 유사하나 Promise를 반환, 비동기로 찾을 때 사용
+- queryBy...: 인수의 조건에 맞는 요소를 반환하는 대신, 찾지 못하면 null을 반환, 찾지 못해도 에러를 발생시키고 싶지 않을 떄 사용
+
+기능은 같지만 복수 개를 찾고 싶을 때는 getAllby, findAllBy, queryAllBy 등을 사용
+
+**정적 컴포넌트**  
+정적 컴포넌트는 테스트를 원하는 컴포넌트를 렌더링한 후, 원하는 요소를 찾아 테스트를 수행하면 됨.
+
+jest 메서드 예시:
+
+- beforeEach: 각 테스트(it)를 수행하기 전에 실행하는 함수
+- describe: 비슷한 속성을 가진 테스트를 하나의 그룹으로 묶는 역할
+- it: test와 완전히 동일하며, test의 축약어
+- testId: 리액트 테스팅 라이브러리의 예약어로, get 등의 선택자로 선택하기 어렵거나 곤란한 요소를 선택하기 위해 사용, testId 데이터셋을 선언해 두고, getByTestId, findByTestId 등으로 선택
+
+* 데이터셋: HTML의 특정 요소와 관련된 임의 정보를 추가할 수 있는 HTML 속성
+
+**동적 컴포넌트**
+
+- setup 함수: 내부에서 컴포넌트를 렌더링하고, 테스트에 필요한 button과 input을 반환
+- userEvent.type: 사용자가 타이핑하는 것을 흉내 내는 메서드. fireEvent의 여러 이벤트를 순차적으로 실행해 자세하게 작동을 흉내 냄
+- jest.spyOn: 특정 메서드를 오염시키지 않고 실행이 됐는지, 어떤 인수로 실행됐는지 등 실행 정보를 얻을 때 사용
+- mockImplementation: 메서드에 대한 모킹 구현을 담당
+
+**비동기 이벤트가 발생하는 컴포넌트**
+
+MSW(Mock Service Worker)는 Node.js나 브라우저에서 사용할 수 있는 모킹 라이브러리로, 실제 네트워크 요청을 가로채는 방식으로 모킹을 구현함. 요청을 MSW가 감지하고 미리 준비한 모킹 데이터를 제공하는 방식.
+
+### 8.2.4. 사용자 정의 훅 테스트하기
+
+react-hooks-testing-library로 테스트 가능
+
+### 8.2.5. 테스트를 작성하기에 앞서 고려해야 할 점
+
+TDD를 따라도 프론트엔드 코드는 사용자의 입력이 자유로워 모든 상황을 커버해 테스트를 작성하는 것은 불가능.  
+실무에서는 테스트 코드를 작성/운영할 여유가 없어 QA에 의존해 개발을 빠르게 진행해야 할 수 있음.
+
+테스트 코드를 작성하기 전에 생각해 볼 최우선 과제는 **애플리케이션에서 가장 취약하거나 중요한 부분을 파악하는 것**.
+
+가장 핵심부터 테스트 코드를 하나씩 작성하는 것이 중요하다. 테스트 코드는 100%를 커버하기 위해 작성하는 것이 아님.
+
+### 8.2.6. 그 밖에 해볼 만한 여러 가지 테스트
+
+- 유닛 테스트: 각각의 코드나 컴포넌트가 독립적으로 분리된 환경에서 이뤄지는 테스트
+- 통합 테스트: 유닛 테스트를 통과한 여러 컴포넌트를 묶어 하나의 기능으로 동작하는지 테스트
+- 엔드 투 엔드 테스트: E2E 테스트라 하며, 실제 사용자처럼 작동하는 로봇을 활용해 애플리케이션을 전체적으로 테스트
