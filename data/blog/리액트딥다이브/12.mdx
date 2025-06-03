@@ -1,0 +1,213 @@
+---
+title: '[리액트 딥다이브] - 10. 리액트 17과 18의 변경 사항 살펴보기'
+date: '2025-06-03'
+tags: ['react', 'book', '모던리액트DeepDive']
+draft: false
+summary: 10. 리액트 17과 18의 변경 사항 살펴보기
+layout: PostSimple
+---
+
+## 10.1. 리액트 17 버전 살펴보기
+
+리액트 17은 호환성이 깨지는 변경 사항을 최소화하는 업그레이드
+
+### 10.1.1. 리액트의 점진적인 업그레이드
+
+리액트 17의 주요 변경 사항 중 하나는 이후의 점진적인 업그레이드를 지원하기 위한 변경
+
+### 10.1.2. 이벤트 위임 방식의 변경
+
+리액트 16까지는 이벤트 위임이 모두 document에서 수행되었음.  
+17부터는 루트 요소로 바뀌어 이벤트가 해당 리액트 컴포넌트 트리 수준으로 격리되어 이벤트 버블링으로 인한 혼선을 방지할 수 있음.
+
+### 10.1.3. import React from 'react'가 더 이상 필요 없다: 새로운 JSX transform
+
+16 버전까지는 JSX 변환을 위해 코드 내 React를 사용하는 구문이 없어도 `import React from 'react'`가 필요했음.  
+17부터는 바벨과 협력해 import 구문 없이도 JSX를 변환할 수 있게 됨. import React가 필요없어진 장점과 불필요한 import 구문을 삭제해 번들링 크기를 약간 줄일 수 있게 해줌.
+
+16 버전에서 코드를 변환할때 React.createElement를 수행할 때 필요한 `import React from 'react'`까지 추가해주지 않아 필요했었는데, 17부터는 React.createElement가 사라지고 react/jsx-runtime을 불러오는 require 구문도 같이 추가되며 작성할 필요가 사라짐.
+
+### 10.1.4. 그 밖의 주요 변경 사항
+
+**이벤트 풀링 제거**
+
+리액트는 브라우저 기본 이벤트가 아닌 한번 래핑한 이벤트(SyntheticEvent)를 사용하기 때문에 이벤트가 발생할 때마다 이벤트를 새로 만들고, 메모리 할당 작업이 일어남.
+
+이벤트 풀링: SyntheticEvent 풀을 만들어 이벤트 발생 시마다 가져오는 것
+
+이벤트 풀링 시스템의 이벤트 발생 방식
+
+1. 이벤트 핸들러가 이벤트를 발생
+2. 합성 이벤트 풀에서 합성 이벤트 객체에 대한 참조를 가져옴
+3. 이 이벤트 정보를 합성 이벤트 객체에 넣음
+4. 유저가 지정한 이벤트 리스너가 실행
+5. 이벤트 객체가 초기화되고 다시 이벤트 풀로 돌아감
+
+한 번 이벤트 핸들러를 호출한 SyntheticEvent는 재사용을 위해 `null`로 초기화되는데, 비동기 코드 내부에서 SyntheticEvent인 e에 접근하면 이미 사용되고 초기화된 이후라 `null`만 얻게 됨.
+
+비동기 코드로 이벤트 핸들러에 접근하기 위해 별도 메모리 공간에 합성 이벤트 객체를 할당하는 점, 모던 브라우저에서 이러한 방식이 성능 향상에 크게 도움이 되지 않는 점 때문에 이벤트 풀링 개념은 삭제됨.
+
+**useEffect 클린업 함수의 비동기 실행**
+
+리액트 16까지는 클린업 함수가 동기적으로 처리됨. 그러므로 클린업 함수 완료 전까지 다른 작업을 방해해 불필요한 성능 저하가 일어남.  
+17 버전부터는 화면이 완전히 업데이트된 후 클린업 함수가 비동기적으로 실행됨.
+
+**컴포넌트의 undefined 반환에 대한 일관적인 처리**
+
+16과 17 모두 의도치 않은 잘못된 반환을 방지하기 위해 컴포넌트 내부에서 `undefined`를 반환하면 오류가 발생함.  
+16에서는 forwardRef나 memo에서 `undefined`를 반환하는 경우에는 에러를 발생시키지 않았는데 17부터는 정상적으로 에러가 발생함.  
+18부터는 `undefined`를 반환해도 에러가 발생하지 않음.
+
+## 10.2. 리액트 18 버전 살펴보기
+
+가장 큰 변경점은 동시성 지원
+
+### 10.2.1. 새로 추가된 훅 살펴보기
+
+**useId**
+
+컴포넌트별로 유니크한 값을 생성하는 새로운 훅.  
+클라이언트와 서버에서 불일치를 피하면서 컴포넌트 내부의 고유한 값을 생성할 수 있음(하이드레이션 에러를 방지)
+
+```jsx
+export default function UniqueComponent() {
+  return <div>{Math.random()}</div> // 하이드레이션 에러
+}
+```
+
+`useId`가 생성하는 값은 `:`로 감싸져 있는데, CSS 선택자나 querySelector에서 작동하지 않도록 한 의도적 결과  
+앞 글자가 R이면 서버에서 생성된 값, r이면 클라이언트에서 생성된 값.
+
+> Do not call useId to generate keys in a list. Keys should be generated from your data.
+
+유니크한 값이라는 설명에 key에 활용하면 좋을 것 같아 공식문서를 보니 key에는 사용하지 말라고 되어있다.
+
+**useTransition**
+
+UI 변경을 가로막지 않고 상태를 업데이트할 수 있는 훅.  
+상태 업데이트를 긴급하지 않은 것으로 간주해 무거운 렌더링을 미루고 나은 사용자 경험을 제공할 수 있음.
+
+상태 변경으로 무거운 작업이 발생해 렌더링이 가로막히는 경우(로딩이 늦는 경우), `useTransition`을 사용하면 느린 렌더링 과정에서 로딩 화면을 보여주거나 지금 진행 중인 렌더링을 버리고 새로운 상태값으로 다시 렌더링하는 등의 작업을 할 수 있어 앱의 성능을 향상시키고 더 자연스러운 UX를 제공함.
+
+```jsx
+const [isPending, startTransition] = useTransition() // 인수를 받지 않음
+const [tab, setTab] = useState('tab')
+
+function selectTab(nextTab) {
+  startTransition(() => {
+    setTab(nextTab)
+  })
+}
+```
+
+isPending은 상태 업데이트의 진행 중 여부를 확인하는 `boolean`이고, startTransition은 긴급하지 않은 상태 업데이트로 간주할 set 함수를 넣어둘 수 있는 함수를 인수로 받음.
+
+set함수를 useTransition을 통해 처리하면 렌더링이 블로킹되지 않으며, isPending 작업 동안 보여줄 화면을 보여주며 렌더링을 진행하다가, 다른 set 동작이 실행되면 기존 렌더링을 중단하고 새 렌더링을 시작한다.
+
+주의점
+
+- startTransition 내부는 반드시 setState와 같은 상태 업데이트 함수만 넘길 수 있음.
+- startTransition으로 넘겨주는 상태 업데이트는 다른 모든 동기 상태 업데이트로 인해 실행이 지연될 수 있음.
+- startTransition으로 넘겨주는 함수는 반드시 동기 함수여야 함.
+
+**useDeferredValue**
+
+디바운스와 비슷하지만 다른 훅으로, 디바운스는 고정된 지연 시간을 필요로 하는 반면, useDeferredValue는 고정 지연 시간 없이 첫 번째 렌더링이 완료된 후에 지연된 렌더링을 수행함. 그러므로 지연된 렌더링을 중단할 수도 있고, 사용자의 인터랙션을 차단하지도 않음.
+
+useDeferredValue는 state 값 자체만을 감싸서 사용하고, useTransition은 state 값을 업데이트하는 함수를 감싸서 사용. 방식은 다르지만 모두 지연된 렌더링을 함. 두 가지를 동시에 사용할 필요는 없음.
+
+**useSyncExternalStore**
+
+useSubscription 훅이 리액트 18에서 useSyncExternalStore로 대체됨.
+
+- 테어링 현상(tearing): 하나의 state 값이 있음에도 서로 다른 값(state나 props의 이전과 이후)을 기준으로 렌더링되는 현상  
+   리액트 18에서 동시성 이슈로 발생할 수 있게 됨.
+
+과거 리액트는 동기적으로 렌더링이 한 번에 발생해 문제가 없었지만, 리액트 18에서부터는 문제가 발생할 수 있게 됨. 리액트에서 관리할 수 없는 외부 데이터 소스, 글로벌 변수, document.body, window.innerWidth, DOM, 외부 상태 관리 라이브러리 등이 동시성 처리가 되어 있지 않다면 테어링 현상이 발생할 수 있고, 이를 해결하기 위한 훅이 useSyncExternalStore.
+
+**useInsertionEffect**
+
+useSyncExternalStore가 상태 관리 라이브러리를 위한 훅이라면 useInsertionEffect는 CSS-in-js 라이브러리를 위한 훅.  
+CSS의 추가 및 수정은 렌더링 작업 대부분을 다시 계산해 작업해야 하는데, 이는 모든 리액트 컴포넌트에 영향을 미칠 수 있는 무거운 작업.  
+useEffect와 기본적인 훅 구조가 동일한데, useInsertionEffect는 DOM이 실제로 변경되기 전에 동기적으로 실행됨.  
+useInsertionEffect => useLayoutEffect => useEffect 순으로 실행됨.
+
+### 10.2.2. react-dom/client
+
+**createRoot**
+
+기존 react-dom의 render 메서드를 대체
+
+```jsx
+// before
+import ReactDOM from 'react-dom'
+import App from 'App'
+
+const container = document.getElementById('root')
+
+ReactDOM.render(<App />, container)
+
+// after
+import ReactDOM from 'react-dom'
+import App from 'App'
+
+const container = document.getElementById('root')
+
+const root = ReactDOM.createRoot(container)
+root.render(<App />)
+```
+
+**hydrateRoot**
+
+서버 사이드 렌더링 애플리케이션에서 하이드레이션을 하기 위한 메서드.  
+대부분 SSR은 프레임워크에 의존하므로 사용자가 수정할 일은 거의 없음.
+
+### 10.2.3. react-dom/server
+
+**renderToPipeableStream**
+
+리액트 컴포넌트를 HTML로 렌더링하는 메서드.  
+HTML을 점진적으로 렌더링하고 클라이언트에서는 중간에 script를 삽입하는 등의 작업이 가능.
+
+리액트 18에서 제공하는 `<Suspense />`와 같은 코드 분할, 지연 렌더링을 서버 사이드에서 완전히 사용하기 위해서는 renderToNodeStream 대신 이 메서드를 사용해야 함.
+
+**renderToReadableStream**
+
+서버 환경이 아닌 클라우드플레어나 디노같은 웹 스트림을 사용하는 모던 엣지 런타임 환경용 메서드.
+
+### 10.2.4. 자동 배치(Automatic Batching)
+
+리액트가 여러 상태 업데이트를 하나의 리렌더링으로 묶어 성능을 향상시키는 방법.
+
+```js
+function handleClick(id) {
+  setCount((prev) => prev + 1)
+  setId(id)
+}
+```
+
+17에서는 자동 배치가 되지 않아 두 번의 리렌더링이 발생하고, 18에서는 자동 배치로 한 번의 리렌더링이 일어남.  
+자동 배치를 사용하고 싶지 않다면 flushSync를 사용하면 됨.
+
+### 10.2.5. 더욱 엄격해진 엄격 모드
+
+**리액트의 엄격 모드**
+
+- 더 이상 안전하지 않은 특정 생명주기를 사용하는 컴포넌트에 대한 경고
+- 문자열 ref 사용 금지
+- findDOMNode에 대한 경고 출력
+- 구 Context API 사용 시 발생하는 경고
+- 예상치 못한 부작용(side-effects) 검사
+
+### 10.2.6. Suspense 기능 강화
+
+- 마운트되기 직전임에도 effect가 빠르게 실행되는 문제가 수정되어 컴포넌트가 화면에 노출될 때 effect가 실행.
+- Suspense로 인해 컴포넌트가 보이거나 사라질 때도 effect가 정상적으로 실행.
+- 서버에서도 실행할 수 있게 됨.
+- Suspense 내에 스로틀링이 추가됨.
+
+### 10.2.8. 그 밖에 알아두면 좋은 변경사항
+
+- 컴포넌트에서 `undefined`를 반환해도 에러가 발생하지 않음. `undefined` 반환은 null 반환가 동일하게 처리됨.
+- `<Suspense fallback={undefined}`도 `null`과 동일하게 처리됨.
+- renderToNodeStream이 지원 중단됨.
