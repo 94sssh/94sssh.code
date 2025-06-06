@@ -3,19 +3,19 @@
   "vite": 1,
   "test": 1,
   "javascript": 59,
-  "book": 106,
+  "book": 107,
   "deepdive": 52,
   "document": 7,
   "type": 1,
   "polymorphism": 1,
   "OOP": 2,
   "network": 10,
-  "react": 12,
+  "react": 13,
   "프로그래머의뇌": 6,
   "쏙쏙들어오는함수형코딩": 16,
   "요즘우아한개발": 6,
   "그림으로배우는네트워크원리": 10,
   "자료구조": 1,
   "알고리즘": 1,
-  "모던리액트DeepDive": 12
+  "모던리액트DeepDive": 13
 }
