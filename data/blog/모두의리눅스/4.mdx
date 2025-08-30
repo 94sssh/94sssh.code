@@ -1,0 +1,129 @@
+---
+title: '[모두의 리눅스] - 06. 파일 검색 및 명령어 사용법'
+date: '2025-08-30'
+tags: ['linux', 'os', '모두의리눅스']
+draft: false
+summary: 06. 파일 검색 및 명령어 사용법
+layout: PostSimple
+---
+
+## 6.1. 파일을 찾는 방법
+
+### find 명령어: 디렉터리 트리에서 파일 찾기
+
+`find <검색할 디렉터리> <검색 조건> <액션>`
+
+`find`명령어를 실행하면 `<검색할 디렉터리>`를 기점으로 `검색 조건`을 만족하는 파일을 찾아 `<액션>`을 실행한다. 검색 조건을 지정하지 않으면 지정한 디렉터리 안의 모든 파일과 디렉터리를 대상으로 액션이 실행됨.
+
+```bash
+$ find . -name file-1.txt -print # .(현재 디렉터리)에서 file-1.txt를 찾아 경로를 출력
+# 액션을 지정하지 않으면 -print가 기본값
+```
+
+**이름으로 찾기(-name, -iname)**
+
+파일 이름을 검색하려면 `-name`(대소문자 구별), `iname`(대소문자 비구별)을 지정  
+파일 이름은 와일드카드로 `*`로 임의의 문자열을, `?`로 임의의 한 문자를 사용할 수 있음. `*`나 `?`를 사용하면 작은따옴표로 감싸야 한다.
+
+**파일 형식으로 찾기(-type)**
+
+주로 사용되는 파일 형식 세 가지
+
+| 지정    | 파일 형식   |
+| ------- | ----------- |
+| -type f | 파일        |
+| -type d | 디렉터리    |
+| -type l | 심볼릭 링크 |
+
+```bash
+$ find . -type d -print # d로 디렉터리만 검색
+```
+
+**검색 조건 여러 개 지정하기(-a)**
+
+`a(AND)`를 사용해 검색 조건을 여러 개 지정할 수 있음. 사용할 때 `-a`를 생략하고 검색 조건 나열만 해도 작동
+
+```bash
+$ find . -type f -a -name '*.txt' -print
+$ find . -type f -name '*.txt' -print
+```
+
+### locate 명령어: 데이터베이스에서 파일 찾기
+
+전용 데이터베이스에서 검색해 `find`보다 빠르지만 별도로 설치해야 함
+
+```bash
+$ locate --version
+명령어 'locate'을(를) 찾을 수 없습니다. 그러나 다음을 통해 설치할 수 있습니다: # 버전이 출력되면 이미 설치된 것
+sudo apt install mlocate
+```
+
+- 설치
+
+```bash
+$ sudo apt-get install mlocate # 우분투는 apt-get 명령어로 설치
+$ yum install mlocate # CentOS는 yum 명령어로 설치
+```
+
+설치 후 슈퍼 사용자 권한으로 `updatedb` 명령어를 실행해 데이터베이스를 만든다
+
+```bash
+$ sudo updatedb
+```
+
+`locate [옵션] <검색 패턴>`명령어로 파일을 검색할 수 있다. `find`는 실행할 때마다 디렉터리를 탐색해 시간이 오래 걸리지만, `locate`는 데이터베이스를 활용해 매우 빠르다.
+
+locate 명령어는 데이터베이스를 하루에 한 번 만들도로 설정되어 다음과 같은 문제가 있을 수 있다.
+
+- 검색된 파일이 디스크에 존재하지 않을 수 있음
+- 검색되지 않았지만 존재할 수 있음(방금 만든 파일인 경우)
+
+## 6.2. 명령어 사용법 확인하기
+
+### --help 옵션
+
+모르는 명령어의 사용법 확인을 위해 매뉴얼을 참조할 수 있음
+
+리눅스 명령어 대부분은 `--help` 옵션을 제공함.
+
+```bash
+$ cat --help
+Usage: cat [OPTION]... [FILE]...
+Concatenate FILE(s) to standard output.
+
+With no FILE, or when FILE is -, read standard input.
+
+  -A, --show-all           equivalent to -vET
+  -b, --number-nonblank    number nonempty output lines, overrides -n
+  -e                       equivalent to -vE
+  -E, --show-ends          display $ at end of each line
+  -n, --number             number all output lines
+
+...
+```
+
+대부분의 도움말은 다음 내용을 포함
+
+- 사용 방법
+- 명령어 개요
+- 지정 가능한 옵션과 기능
+- 참고 자료
+
+### man 명령어: 매뉴얼 출력
+
+`man <알고 싶은 명령어>`명령어는 지정한 명령어의 온라인 매뉴얼을 출력함
+
+man(manual)은 help보다 자세하며 설정 파일이나 라이브러리에 대한 설명을 포함하고 있음
+
+명령어 이름을 모르는 경우는 `man -k <키워드>`를 사용해 키워드를 포함하고 있는 명령어를 검색할 수 있음
+
+## 6.3. 명령어 검색
+
+`which [옵션] <명령어 이름>`명령어로 명령어 파일의 실제 위치를 확인할 수 있음
+
+```bash
+$ which cat
+/bin/cat
+```
+
+위와 같이 명령어의 전체 경로를 출력해 확인할 수 있음. `a`옵션을 지정해 같은 이름의 파일을 전부 출력 가능
