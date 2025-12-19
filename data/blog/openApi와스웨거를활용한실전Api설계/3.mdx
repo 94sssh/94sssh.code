@@ -1,0 +1,37 @@
+---
+title: '[실전 API 설계] - 04. 스웨거 에디터로 OpenAPI 정의서 작성'
+date: '2025-12-19'
+tags: ['book', 'api', '실전API설계']
+draft: false
+summary: 04. 스웨거 에디터로 OpenAPI 정의서 작성
+layout: PostSimple
+---
+
+## 4.2. 스웨거 에디터에서 OpenAPI 정의서 작성
+
+### 4.2.1. 유효한 미니 OpenAPI 정의서
+
+유효한 OpenAPI 정의서는 다음 세 가지 조건이 충족되어야 함
+
+- OpenAPI 정의서 식별자와 사용한 OpenAPI 명세 버전
+- title, version 필드를 포함하는 info 객체
+- 비어 있는 paths 객체
+
+```yaml
+openapi: 3.0.3 # OpenAPI 명세 버전
+info: # API의 메타데이터
+  title: FarmStall API # API 정의서 이름
+  version: v1 # API 버전
+paths: {}
+```
+
+### 4.4.2. OpenAPI 정의서에 서버 정보 추가
+
+```yaml
+servers: # servers 필드
+  - url: https://farmstall.designapis.com/v1 # API의 기초 경로
+```
+
+servers 배열은 API 정의서 최상위 요소로 추가한다.
+
+### 4.4.3. GET /reviews 다시 호출
