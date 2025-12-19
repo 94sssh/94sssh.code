@@ -1,0 +1,51 @@
+---
+title: '[실전 API 설계] - 03. OpenAPI 정의서 첫인상'
+date: '2025-12-19'
+tags: ['book', 'api', '실전API설계']
+draft: false
+summary: 03. OpenAPI 정의서 첫인상
+layout: PostSimple
+---
+
+## 3.2. OpenAPI 명세 소개
+
+형식적 기술하기는 표준이나 규격이 필요하다.  
+OpenAPI 명세는 RESTful API나 HTTP API를 규정해 놓은 규격.
+
+```yaml
+openapi: 3.0.0
+# ...
+paths:
+  /reviews: # 경로 또는 URI
+    get: # HTTP 메소드
+      description: Get a bunch of reviews # 작업 설명
+      parameters: # 파라미터 목록
+        - name: maxRating # 파라미터 이름
+          description: | # 파라미터 설명
+            Filter the reviews
+            by the maximum rating
+          in: query # 파라미터 사용 위치
+          schema: # 파라미터 스키마
+            type: string # 타입(값도 허용)
+      response: # 응답 목록
+        200: # HTTP 상태 코드
+          description: A bunch of reviews # 응답 설명
+```
+
+들여쓰기, 대시, 콜론 등을 사용하는 YAML 양식
+
+## 3.3. YAML 훑어보기
+
+JSON보다 제약이 적으며 동일한 데이터를 여러 방식으로 표현할 수 있음.
+
+- 문자열을 따옴표로 감싸도 되고, 감싸지 않아도 됨
+- 중첩 객체와 배열을 표현하기 위해 들여쓰기 사용. 일관성만 지키면 YAML 파서가 중첩 깊이를 판단
+- 들여 쓰는 칸의 크기에 대한 일관성도 같은 맵이나 시퀀스 내 범위에서만 지키면 됨
+- YAML은 JSON의 슈퍼셋이므로 JSON을 사용할 수 있음
+- 멀티라인 문자열을 지원함
+
+YAML은 JSON 객체(`{}`)나 배열(`[]`) 타입을 의미하는 **플로우 타입**을 지원한다.
+
+### 3.3.1. JSON에서 YAML로
+
+OpenAPI는 YAML 명세 중 YAML 1.2의 JSON 스키마에 집중하며, YAML 기능 중에서 JSON 스키마에 맞는 기능만 사용한다.
