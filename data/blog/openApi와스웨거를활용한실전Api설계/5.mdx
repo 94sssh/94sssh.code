@@ -1,0 +1,30 @@
+---
+title: '[실전 API 설계] - 06. 자원 생성'
+date: '2026-01-02'
+tags: ['book', 'api', '실전API설계']
+draft: false
+summary: 06. 자원 생성
+layout: PostSimple
+---
+
+하나의 연산은 하나의 requestBody만 포함할 수 있지만, 미디어 타입은 각 규격마다 요청 본문을 다르게 기술할 수 있음.
+
+GET, DELETE 연산은 요청 본문이 허용되지 않음.
+
+자바스크립트와 달리 JSON은 마지막 필드나 원소에 쉼표를 허용하지 않으므로 붙이면 안 된다.
+
+### 6.4.1. 경로 파라미터
+
+- name: 파라미터 이름
+- in: 파라미터 위치(예: query, path, header, cookie)
+- schema: 파라미터 스키마
+
+파라미터는 다음 프로퍼티를 포함할 수 있음.
+
+- required: 파라미터 필수 여부(경로 파라미터의 required는 항상 true)
+- example: 파라미터 값 예시
+- examples(복수): example과 겹치지 않는 상호 배타적인 예시 목록
+- deprecated: 표시된 파라미터의 폐기 예정 여부
+- style: 값 직렬화 방식
+- explode: 배열 원소나 객체 필드에 대한 별도의 파라미터 생성 여부
+- allowReserverd: '/'나 '?'처럼 예약된 문자 허용 여부, catch-all 파라미터 사용 시 유용
