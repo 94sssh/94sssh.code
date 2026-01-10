@@ -1,0 +1,107 @@
+---
+title: '[실전 API 설계] - 07. 인증과 인가'
+date: '2026-01-10'
+tags: ['book', 'api', '실전API설계']
+draft: false
+summary: 07. 인증과 인가
+layout: PostSimple
+---
+
+인증: 누구인지를 증명하는 일, 아이디와 비밀번호 등 (사용자 정보)
+인가: 특정 행위나 특정 자원에 대한 접근을 허가받는 것 (사용자 권한)
+
+### 7.3.1. OpenAPI의 인가 처리 방식
+
+연산에 대한 보안 요구사항이나 인가 내용을 기술하려면 두 가지가 필요.
+
+- securitySchemes 아래에 securityScheme을 추가하고 이름을 지정
+- 지정한 보안 이름을 security 필드 아래의 배열에 추가
+
+### 7.3.2. OpenAPI 3.0.x에서 지원하는 인가(보안) 방식
+
+OpenAPI 3.0.x는 다음과 같은 보안 카테고리를 지원
+
+- apiKey
+  - in: header
+  - in: query
+  - in: cookie
+- http
+  - scheme:
+- oauth2
+  - flows: {}
+- openIdConnect
+
+  - openIdConnectUrl: \<url\>
+
+apiKey는 가장 기본적인 보안 유형으로 헤더, 쿼리 파라미터, 쿠키 값으로 요청을 인가.
+
+- apiKey 방식 보안 스킴 객체의 필드
+
+| 필드        | 참고                          | 필수 여부 |
+| ----------- | ----------------------------- | --------- |
+| type        | apiKey                        | 필수      |
+| in          | header, query, cookie 중 하나 | 필수      |
+| name        | 헤더, 쿼리, 쿠키의 이름       | 필수      |
+| description | 보안 관련 설명                | 선택      |
+
+Authorization 헤더도 파라미터로 기술할 수 있지만, 보안 스킴을 사용해 의도를 명확히 하고 도구를 통한 자동화를 가능하게 함.
+
+### 7.3.3. 보안 스킴에 Authorization 헤더 추가
+
+```json
+openapi: 3.0.0
+# ...
+components:
+  securitySchemes:
+    MyUserToken: # 보안 스킴 이름
+      type: apiKey # 보안 유형
+      in: header # apiKey를 사용할 위치. 헤더, 쿼리, 쿠키 중 하나를 지정
+      name: Authorization # in에서 지정한 헤더, 쿼리, 쿠키의 이름
+```
+
+### 7.3.4. POST /reviews에 보안 요구사항 추가
+
+```json
+openapi: 3.0.0
+# ...
+paths:
+  # ...
+  /reviews:
+    post:
+      # ...
+      security: # 연산에 적용할 보안 요구사항 지정
+        - MyUserToken: [] # 스코프의 리스트를 값으로 갖는 보안 객체
+```
+
+security 필드는 배열값을 가질 수 있고, 논리합 `OR`로 동작해 지정된 보안 스킴 중 한 가지만 충족되면 인가받은 요청으로 간주함.
+
+apiKey 방식은 스코프 개념이 없어 빈 배열 지정
+
+## 7.4. 선택적으로 보안 적용
+
+```json
+security:
+  - {} # 빈 객체를 추가하면 보안 기능 선택적 적용
+  - MyUserToken: []
+```
+
+security 값인 배열 요소 중 한 가지만 충족돼도 인가받은 요청으로 간주하므로, 빈 객체를 추가해 인가 받은 요청으로 간주하도록 처리.
+
+## 7.5. 다른 방식의 보안 스킴
+
+- http
+  - HTTP 기본 인증 스킴을 적용할 때 사용
+  - Authorization 헤더를 통해 인증 정보 전달
+- oauth2
+  - 인증 위임을 사용하는 oAuth 2.0 프로토콜 적용할 때 사용
+  - 구글/페이스북과 같이 인증 과정이 서드파티에 위임되어 처리되는 것을 'OAuth Dance'라고 부르기도 함.
+  - 웹사이트에 공유하는 사용자 이름이나 이메일 주소 등이 스코프가 됨.
+  - 인증 API 제공자가 발급한 액세스 토큰을 Authorization 헤더에 담아 요청을 보냄
+- openIdConnect
+  - OpenID Connect 프로토콜을 적용할 때 사용
+  - OAuth 2.0에 탐색 자동화나 사용자 상세 정보를 획득할 수 있는 기능을 추가한 확장판
+
+## 7.6. 보안 스킴을 적용하는 일반적인 방법
+
+security 항목은 보안 요구사항 객체를 원소로 갖는 배열, 보안 요구사항 객체는 보안 스킴 이름과 스코프를 값으로 갖는 객체.  
+스코프는 oAuth 2.0에서만 사용되는 개념이라 그 외의 방식은 빈 배열을 지정하면 됨.
