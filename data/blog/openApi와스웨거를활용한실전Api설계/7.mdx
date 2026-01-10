@@ -1,0 +1,28 @@
+---
+title: '[실전 API 설계] - 08. API 문서 준비와 호스팅'
+date: '2026-01-10'
+tags: ['book', 'api', '실전API설계']
+draft: false
+summary: 08. API 문서 준비와 호스팅
+layout: PostSimple
+---
+
+## 8.4. 태그로 연산 그룹 짓기
+
+OpenAPI는 태그로 API 그룹화가 가능.
+
+태그는 스웨거 UI에서 섹션으로 표시되고, 각 섹션은 관련 연산이 나열됨.
+
+```json
+openapi: 3.0.0
+# ...
+tags: # 루트에 추가하는 tags 필드로 설명 추가
+  - name: Reviews # 태그 이름은 대소문자를 구분, 정확히 일치해야 함
+    description: 리뷰 # 태그 설명
+
+paths:
+  /reviews:
+    get:
+      tags: # tags 필드 추가
+      - Reviews
+```
