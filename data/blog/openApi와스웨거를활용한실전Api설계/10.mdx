@@ -1,0 +1,117 @@
+---
+title: '[실전 API 설계] - 13. Node.js와 스웨거 코드젠으로 백엔드 구축'
+date: '2026-02-07T00:00:00'
+tags: ['book', 'api', '실전API설계']
+draft: false
+summary: 13. Node.js와 스웨거 코드젠으로 백엔드 구축
+layout: PostSimple
+---
+
+## 13.2. 스웨거 코드젠 소개
+
+코드젠으로 클라이언트 코드 생성과 서버 코드 생성할 수 있다.
+
+**클라이언트 코드**  
+코드젠을 통해 생성한 클라이언트 코드는 일종의 SDK로, 요청을 직접 생성해 API를 호출하지 않고 SDK를 사용해 애플리케이션을 만들 수 있음.
+
+**서버 코드**  
+서버 코드는 서버 스텁 코드를 생성한다. 스텁 코드는 미완 코드로, 형태는 갖췄지만 기능을 제대로 수행할 수 없으므로 모의 데이터를 반환한다.
+
+## 13.3. 백엔드 구조
+
+### 13.3.2. 백엔드 구조 분석
+
+코드젠이 생성한 nodejs-server 디렉터리 내용
+
+- .swagger-codegen: 코드젠 버전이 명시된 VERSION 파일이 있는 디렉터리
+- api: 입력으로 사용한 OpenAPI 파일을 수정한 내용을 담고 있는 openapi.yaml 파일이 있는 디렉터리
+- controllers: Default.js 파일이 있는 디렉터리. 이 파일에는 API 정의서에 명시된 경로 기준으로 명명된 함수 목록이 담겨 있음.
+- service: DefaultService.js 파일이 있는 디렉터리. 이 파일에는 controllers의 Default.js 파일 안에 있던 함수가 호출하는 서비스 함수가 들어 있음.
+- utils: API 응답을 만들어 내는 유틸 함수가 들어 있는 writer.js 파일이 있는 디렉터리.
+- index.js: 시작점으로, controllers 디렉터리와 api/openapi.yaml, oas3-tools 라이브러리 참조를 포함하고 있음
+- package.json
+
+**oas3-tools**: OpenAPI를 읽어서 사용할 수 있는 유틸 함수를 포함하고 있는 라이브러리
+
+자동 생성된 백엔드 코드는 컨트롤러와 서비스 구조를 갖고 있음.
+
+- index.js는 클라이언트 요청이 도달하면 요청을 컨트롤러에 디스패치 한다.
+- 모든 API 연산은, 서비스 함수를 호출해 요청을 처리하고 응답을 반환하는 **컨트롤러 함수**를 갖고 있다. 컨트롤러 함수는 controllers 디렉터리에 정의.
+- 컨트롤러가 호출하는 **서비스 함수**는 요청을 처리한다. 서비스 함수는 service 디렉터리 안에 정의.
+
+### 13.3.3. OpenAPI 수정 내용
+
+openapi.yaml의 첫 번째 경로에 2개의 새로운 키워드가 있음.
+
+- operationId: 연산마다 지정되어 있다. 코드젠이 경로와 메서드를 합쳐서 만들어 낸 값. (/users 경로의 POST 메서드면 usersPOST)
+- x-swagger-router-controller: Default로 지정되어 있음. Default는 컨트롤러에 있던 파일 이름.
+
+지정된 경로로 요청이 들어오면 x-swagger-router-controller로 지정된 컨트롤러 파일에서 operationId로 지정된 함수에 요청을 전달함.
+
+## 13.4. 백엔드 OpenAPI 수정
+
+### 13.4.1. operation ID 추가
+
+코드젠은 operation ID를 함수 이름으로 사용하며, 유일한 식별자로 사용됨.
+
+정의한 operation ID를 OpenAPI 정의서의 각 연산에 추가함.
+
+```json
+openapi: 3.0.3
+#...
+paths:
+  /users:
+    post:
+      summary: Register User
+      operationId: registerUser // 추가
+      responses:
+        '201':
+          ...
+#...
+```
+
+### 13.4.2. API 연산에 태그 지정
+
+따로 지정하지 않으면 코드젠은 모든 컨트롤러 함수를 Default 파일에 몰아넣는다. 이때, 태그로 여러 개의 연산들을 분리하고 그룹 지어 표시할 수 있음.
+
+태그를 정의하고 OpenAPI 파일에 예제를 추가한다.
+
+```json
+openapi: 3.0.3
+info:
+  title: Open API
+  version: "0.1"
+tags:
+  - name: Users
+    description: User-related operations
+  - name: Jobs
+    description: Job-related operations
+```
+
+이후, 연산에도 태그를 지정한다.
+
+```json
+openapi: 3.0.3
+#...
+paths:
+  /users:
+    post:
+      tags:
+      - Users  // 추가
+      summary: Register User
+      operationId: registerUser
+      responses:
+        '201':
+          ...
+#...
+```
+
+### 13.4.3. 백엔드 스텁 재생성
+
+operationId와 태그를 추가한 후, 백엔드 스텁 코드를 다시 생성한다.
+
+이전과 비교해 다음과 같은 차이가 있다.
+
+- controllers 디렉터리에 Default.js 대신 태그를 따라 Users.js와 Jobs.js 파일이 생성됨.
+- service 디렉터리에도UsersService.js와 JobsService.js 파일이 생성됨.
+- 컨트롤러와 서비스 안에 있는 함수는 태그에 따라 분리된 파일 안에 정의됨.
