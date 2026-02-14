@@ -1,0 +1,37 @@
+---
+title: '[실전 API 설계] - 14. 웹 애플리케이션 통합 및 출시'
+date: '2026-02-14T00:00:00'
+tags: ['book', 'api', '실전API설계']
+draft: false
+summary: 14. 웹 애플리케이션 통합 및 출시
+layout: PostSimple
+---
+
+### 14.2.1. 보안 스킴 생성
+
+OpenAPI 정의서는 apiKey, HTTP, OAuth2, OpenIDConnect 이렇게 4개의 보안 스킴 중 여러 개를 선택해서 지정할 수 있다.
+
+### 14.2.3. 연산 보안 정의
+
+연산에 security 속성을 추가해 보안 스킴을 적용할 수 있다.
+
+전역으로 글로벌 보안을 사용할 수 있다.
+
+```json
+openapi: 3.0.3
+#...
+security: // 글로벌 security 키워드
+  - SessionToken: []
+```
+
+글로벌 보안이 적용되지 않게 하려면 security 키워드에 빈 배열을 지정한다.
+
+```json
+openapi: 3.0.3
+#...
+paths:
+  /users:
+    post:
+      #...
+      security: []
+```
