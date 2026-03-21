@@ -1,0 +1,18 @@
+---
+title: '[실전 API 설계] - 18. problem+json을 활용한 예외 처리'
+date: '2026-03-21T00:00:00'
+tags: ['book', 'api', '실전API설계']
+draft: false
+summary: 18. problem+json을 활용한 예외 처리
+layout: PostSimple
+---
+
+## 18.5. problem+json 형식
+
+[RFC 7807 'HTTP API 문제 상세'](https://datatracker.ietf.org/doc/html/rfc7807) 표준 명세는 에러 응답에 대해 확장 가능한 표준화된 접근 방식을 따르는 최소한의 형식을 정의. 에러 응답 반환 시 Content-Type 헤더에 `application/problem+json`을 지정하면 RFC 7807 표준을 따르는 에러 응답임을 나타낼 수 있다. problem+json을 사용하면 API 에러 응답 설계에 일관성을 가질 수 있어 사용을 권장.
+
+problem+json 스키마는 다음과 같은 특징이 있다.
+
+- type과 instance 필드에 URI를 사용함. URI를 통해 역참조를 할 수 있음.
+- 에러 메시지에 대한 제목을 title, 설명을 detail 두 필드에 나눠 담을 수 있음.
+- JSON 구조 안에도 HTTP 상태 코드 값의 사본이 status 필드에 들어 있음.
