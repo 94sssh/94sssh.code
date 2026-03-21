@@ -1,0 +1,60 @@
+---
+title: '[실전 API 설계] - 19. 고급 JSON 스키마를 활용한 입력값 유효성 검증'
+date: '2026-03-22T00:00:00'
+tags: ['book', 'api', '실전API설계']
+draft: false
+summary: 19. 고급 JSON 스키마를 활용한 입력값 유효성 검증
+layout: PostSimple
+---
+
+## 19.2. 유효성 검증 세부 기능
+
+### 19.2.1. readOnly, writeOnly 프로퍼티
+
+JSON 스키마의 readOnly 값이 true면 읽기 전용, false면 읽기, 쓰기가 모두 가능하다.
+
+writeOnly 값이 true면 값 변경만 가능, 읽을 수는 없음. false면 쓰기, 읽기 모두 가능
+
+| 필드      | true        | false           | 주 용도                      |
+| --------- | ----------- | --------------- | ---------------------------- |
+| readOnly  | 읽기만 가능 | 읽기, 쓰기 가능 | 응답에만 사용(ID)            |
+| writeOnly | 쓰기만 가능 | 읽기, 쓰기 가능 | 요청 본문에만 사용(비밀번호) |
+
+둘 모두 기본값은 `false`다.
+
+### 19.2.2. 숫자 제약사항 강제
+
+| 키워드           | 용도        | 경곗값 포함 |
+| ---------------- | ----------- | ----------- |
+| maximum          | 상한값 정의 | o           |
+| minimum          | 하한값 정의 | o           |
+| exclusiveMaximum | 상한값 정의 | x           |
+| exclusiveMinimum | 하한값 정의 | x           |
+
+exclusiveMaximum, exclusiveMinimum의 기본값은 `false`다.
+
+-multipleOf: 정수 배수 표현, 소숫점 이하 자릿수 제한 가능
+
+### 19.2.3. 문자열 형식 강제
+
+- minLength: 최소 길이 지정
+- maxLength: 최대 길이 지정
+- pattern: 정규 표현식 지정
+
+### 19.2.4. 배열 제약사항 강제
+
+- minItems: 최소 개수 지정
+- maxItems: 최대 개수 지정
+- uniqueItems: `true`시 중복 요소 허용 x, `false`시 허용
+
+minItems를 1로 지정하더라도 required 필드에 포함되지 않으면, 요소가 1개인 배열도 유효하고 배열 필드 자체가 아예 존재하지 않아도 유효하다.
+
+### 19.2.5. 열거형 정의
+
+- enum: 정의된 값만 허용
+
+### 19.2.6. 필수 프로퍼티와 선택 프로퍼티 목록
+
+기본적으로는 모든 프로퍼티는 선택 프로퍼티.
+
+- required: 개별 프로퍼티가 아니라 object에 지정. 필수 프로퍼티의 이름 목록을 값으로 가짐.
